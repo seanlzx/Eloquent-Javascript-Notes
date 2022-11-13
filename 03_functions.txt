@@ -1,0 +1,216 @@
+"People think that computer science is the art of geniuses but the actual reality is the 
+opposite, just many people doing things that build on each other, like a wall of mini stones."
+
+Functions, the concept of wrapping a piece of program has many uses.
+	structure
+	reduce repetition
+	associate names with subprograms
+	and isolate subprograms from each other
+	
+Defining a function
+	const squareFunc = function(n) {
+		return n * n;
+	};
+	
+functions can return a value and or have side effects
+	
+once a function returns a value, the functions is over, code below is not runned
+
+in JavaScript functions with no return statement, will return undefine. Similarly Functions with 
+return and nothing after return undefine
+
+variables within functions like python are local
+
+scope
+	to declare a global variable, just declare it outside a function
+		do you have to global when using a global variable within a function??????
+	
+	- bindings declared with "let" and "const" are local to the block that they are declared in
+	- in pre 2015 JavaScript, only functions created new scopes, so the older "var" is visible 
+	in the entire function scope, or global scope if not in a function
+	
+	-if a function happens to have a binding assigment or declaration with the same name as 
+	another binding in it's parent scope. the bindings will be independent of each other.
+	
+	functions can be delcared within functions, it has lexical scoping (also called static scope)
+	
+in JavaScript, functions just like any other value, can be assigned to multiple bindings. And their 
+bindings can be reassigned to other functions
+
+function values can also just be used in an expression, no need to assign them to bindings
+	
+three ways to define functions
+	// 1. function expressions
+	let squareFunc = function(n) {
+		return n * n;
+	}
+	
+	
+	// 2. function declaration
+	function squareFunc(n) {
+		return n * n;
+	}
+	// there is a subtle difference between the first and second, the second one 
+	no matter where it is declared is moved to top of the code conceptually. So 
+	it can be invoked above it. much better.
+	
+	
+	// 3. arrow function
+	let squareFunc = (n) => {
+		return n * n;
+	}
+	// if only one parameter, can negate the brackets also if the function body has only a single
+	// expression with a value. can negate the brackets and return keyword
+	let squareFunc = n => n * n;
+	// if an arrow function has no parameters, then just have empty parentheses
+	let hello = () => {
+		console.log("hello world")
+	}
+	// the idea of arrow function is saying this input in parenthese goes into this statement in
+	brackets
+	// there is little difference between arrow functions and functions expressions. 
+	// arrow function for the win
+		
+The Call stack
+	when a function is invoked, and completes its statements, the computer must return to the where
+	the invocation ended. the place the computer stores this context is the "call stack".
+	
+	storing this stack requires space in the computer's memory.
+	It the stack runs out of memory, the computer will fail. 
+		"out of stack space" "too much recursion"
+		
+Functions can be called with more arguments, or less arguments than it's parameters.
+	if less arguments than expected, the arguments will be "undefined", unless given a default value
+	
+	//the following will print hello dude
+	
+	let hello = (name = "dude") => {
+		console.log(`hello ${name}`);
+	}
+	
+	/* the following code is a function that returns another function that is making use of the 
+	enclosing functions variable */
+	// it also demonstrates that code...
+	let hello = name => {
+		return () => console.log(`hello ${name}`);
+	}
+	
+Closure
+	// the returned function is than called twice with different values
+	let helloFuncDude = hello("dude");
+	let helloFuncAbe = hello("abe");
+	helloFuncDude();
+	// prints dude
+	helloFuncAbe();
+	// prints abe
+	
+	/*this demonstrates that local bindings are created anew for every call, and different calls can't 
+	override one another's local bindings.
+	
+	this ability to reference a specifc instance of a local binding in an enclosing scope is called closure
+	seems very OOP or at least like struct from c*/
+	
+	// seems very useful not sure I fully understand https://eloquentjavascript.net/03_functions.html#c_iIlCVmvMSs
+	// ctrl-f closure
+	/* think of it like dis: the function values are derived from the code and environment in which it was created.
+	when called, the function body sees the environment in which it was created, not the environment in which it is 
+	called */
+	
+	MY OWN LIDDLE EXPERIMENT WITH INSTANCES OF A FUNCTION!!!!!!!!!!!
+		let car = (name, license, horn) => {
+			return () => console.log(`${name} ${license}: ${horn}`);
+		}
+		
+		let bentley = car("Bentley", "69B", "honk");
+		let bmw = car("BMW", "420LOL", "Huh");
+		bentley();
+		bmw();
+	
+	youtube "learn closure in 7 minutes" - web dev simplified
+		console.log("test");
+
+		let outterFunc = outerVar => {
+			return innerFunc = innerVar => {
+				console.log("out: " + outerVar);
+				console.log("in: " + innerVar); 
+			}
+		}
+
+		outterFuncInstance = outterFunc ("outside");
+
+		//this won't work
+		/*
+		console.log(outerVar);
+		*/
+		
+		console.log(outterFuncInstance("inside"));
+		
+		/* so even when the outFunc is done executing,
+		when you call the innerFunc it still able to retrieve the outFunc's outvariable */
+
+
+//so even if the outer variable is done executing the value remains
+Recursion
+	so yeah, it's slower
+	is the best answer for solutions that have branching paths, linear
+	
+	//the below code takes n, and returns a 1 and a sequence of +5 and or *3 till it reached n or null
+		let sequence = target => {
+			let find = (current, history) =>
+			{
+				if(current === target){
+					return history;
+				} else if (current > target){
+					// return null is same as returning false
+					return null;
+				} else {
+					// the below is a shortcircuit
+					return find(current + 5, `${history} + 5`) || find(current * 3, `${history} * 3`);
+				}
+			}
+			return find(1, "1");
+		}
+
+		console.log(sequence(n));
+	
+note: worrying about efficiency can be a distraction, most importantly right something that is correct, than 
+improve where necessary
+
+two main reasons to write functions
+	a piece of code is being repeated, so make a function to
+		save space
+		avoid mistakes
+		make it easier to understand
+		
+	a need for some functionality that deserves its own function
+	
+try to write functions that can be widely used in other areas of program, and give it a good name
+	if it doesn't have to be super specific, try not to make it super specific
+	
+pure functions
+	1. always has the same return values for the same arguments (return value is unaffected by local static variables,
+	non local variables, mutable reference arguments or input streams)
+	2. the function application has no side effects (no mutation of local static variables, non-local variables, 
+	mutable reference arguments or input/output streams)
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+	
+		

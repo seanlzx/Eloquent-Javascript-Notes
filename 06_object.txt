@@ -1,0 +1,419 @@
+"An abstract data type is realized by writing a special kind of program […] which defines the type in terms 
+of the operations which can be performed on it."
+- Barbara Liskov, Programming with Abstract Data Types
+
+Encapsulation
+	the core of idea of object-oriented programming is to divide programs into smaller pieces, responsible
+	for managing their own state
+	
+	different pieces of the program interact with each other through interfaces, limited sets of functions 
+	or bindings, that provice useful functionality at a more abstract level
+	
+	these pieces are modeled using objects. properties and methods that are part of the interface are called "public". 
+	The other, which outside code should not be touching are called "private".
+	
+	many languages provide a way to distinguish public and private properties, preventing outside code from accessing
+	the private ones altogether. JS currently doesn't
+	
+	though the distinction is not built in javascript. programmers utilise this ideas in JS.
+	property names with _ indicate that those are private
+	
+	separating interface from implementation is a great. usually refered to as encapsulation
+	
+Methods
+	a method usually does something with the object it was called upon.
+	when a function is called as a method, looked up as a property and called
+	the binding called this this this this in the methods body automatically points at the object that it was called on
+	
+Note: arrow functions do not have their own this this this this this this this keyword
+Note: arrow functions with no parameters can also be written as such
+	let func = _ => <actions>;
+Note: regular functions created using function declarations or expressions are contructible and callable. since
+regular functions ares constructible, they can be called using the new keyword.
+arrow functions are only callable, not contructible, they can never be used as a constructor function
+
+you can think of "this" as an extra parameter, that is passed in a different way.
+to explicitly pass this, you can use a function's call method, which takes the this value as its first argument
+and treats further arguments as normal parameters.
+
+each functions has its own this binding, whose value depends on the way its called, you cannot refer to this of the 
+wrapping scope in a regular function defined with the function keyword
+
+ARROW FUNCTIONS do not have their own this, but uses the this of the wrapping scope
+
+PROTOTYPES
+	objects, in addition to their set of properties, most objects also have a prototype, another object that is used
+	as a fallback source of properties, when an object gets a request for a property it does not have, its prototype 
+	will be searched for the property, then the prototypes's prototypes and so on.
+	
+	Object.getPrototypeOf(<object>)
+	
+	Object.prototype /* I present thee, the great ancestral prototype of all, it does not have a prototype, it is the 
+	prototype of all */
+	
+	the prototype relations of JavaScript objects form a tree-shaped structure, at the root of this structure sits 
+	Object.prototype. provides a few methods that will works on all objects such as
+		toString
+		valueOf
+		isPrototypeOf
+
+	many objects don't directly have Object.prototype as their prototype but instead have another object provides
+	a different set of default properties
+	
+	functions derive from Function.prototype
+	
+	arrays derive from Array.prototype
+	/* and a such prototype objects will often have a Object.prototype as a prototype, so .toString, .valueOf, etc will
+	still work */
+
+	//acts as a container for properties shared by all rabbits
+	let protoRabbit = {
+		// this is a shorthand way of defining a value
+		speak(line) {
+			console.log(`The ${this.type} rabbit says '${line}'`);
+		} 
+	};
+	/*an individual rabbit, can contain properties unique to itself, in this case it's type value, and still derives shared 
+	properties with it's prototype */
+	let killerRabbit = Object.create(protoRabbit);
+	killerRabbit.type = "killer";
+	killerRabbit.speak("SKREEEE!");
+	console.log(Object.prototypeOf(killerRabbit));
+	// -> {speak: f}
+	console.log(protoRabbit.isPrototypeOf(killerRabbit));
+	// -> true
+	
+Classes
+	JavaScript's prototype system can be interpreted as an informal take on an object-oriented concept
+	called classes. A class defines the shape of a type of object(what methods and properties it has). 
+	such an object is called an instance of a class.
+	
+	prototypes are useful for defining properties, values and methods which all instances will share. properties that
+	differ per instance, need to be stored in the object themselves.
+	
+	Constructor
+		derive from a prototype, declare its own properties
+		
+		function makeRabbit(type){
+			let rabbit = Object.create(protoRabbit); // assign prototype
+			rabbit.type = type;
+			return rabbit;
+		}
+		
+		/*JS has an easier way to define this type of function, using the keyword new in a function call, treats
+		the function as a constructor. The object with the right prototype is automatically created, bound to 
+		this in the function and returned at the end of the function. */
+		
+		function Rabbit(type){
+			this.type = type;
+		}
+		
+		Rabbit.prototype.speak = function(line) {
+			console.log(`The ${this.type} rabbit says '${line}'`);
+		}
+		
+		let weirdRabbit = new Rabbit("weird");
+		
+		/*Contructors (in fact all functions) automatically get's a property named prototype which holds a empty object which 
+		derives from Object.prototype. If you want you can overwrite it with a new object. */
+		
+		//By convention constructors first letter capitalized
+		
+		IMPORTANT. understand the distinction between the way a prototype is associated with a contructor (through its
+		prototype property) and the way objects have a prototype (which can be found with Object.getPrototypeOf). The 
+		actual prototype of a constructor is Function.prototype since contructors are functions. Its prototype property 
+		holds the prototype used for instances created through it.
+		
+		Object.getPrototypeOf(Rabbit) == Function.prototype;
+		
+		Object.getPrototypeOf(weirdRabbit) == Rabbit.prototype;
+		
+Class Notation
+	So JS classes are contructor functions with a prototype property. That is how you wrote them till...
+	2015, this days we have a less awkward notation
+	
+	class Rabbit {
+		constructor(type) {
+			this.type = type;
+		}
+		
+		speak(line) {
+			console.log(`The ${this.type} rabbit says '${line}'`);
+		}
+	}
+		
+	let killerRabbit = new Rabbit("killer");
+
+	/* the class keyword starts a class declaration, allowing us to define a constructor and a set of methods in a 
+	single place */
+	// Any number of methods may be written
+	// the constructor function is special, providing the constructor function and bound to the name rabbit
+
+	Class declarations currently allow only methods(properties that hold functions) to be added to the prototype. This
+	can be somewhat inconvenient when you want to save a non-function value in there. The next version of JS may improve
+	this. For now you can create such properties by directly manipulating the prototype after defining the class.
+	
+	like function, class can be used both in statements and in expresssions. when used as an expression, it doesn't define
+	a binding, but just produces the constructor as a value.
+	
+	let object = new class { getWord() { return "hello"; } };
+	console.log(object.getWord());
+	// → hello
+
+Overriding Derived Properties
+	when adding a property to an object, it is added to the object itself. If the property happens to have the same
+	name in the prototype. The property will override the prototype's property.
+
+	Overriding can be done for Object.prototype methods too, in fact Array.prototype overrides the standard toString
+	console.log(Object.prototype.toString.call([1, 2])); // using the Object.prototype toString
+	// → [object Array]
+	console.log([1, 2].toString()); //using the Array.prototype toString
+	// → 1,2
+
+Maps
+	not be mistake with the array method
+	
+	A map(noun) is a data structure that associates values(keys) with other values.
+	example
+	
+	let ages = {
+	  Boris: 39,
+	  Liang: 22,
+	  Júlia: 62
+	};
+	
+	console.log(ages["Júlia"])
+	//-> 62
+	console.log(ages.Boris)
+	// - > 39
+	console.log("Liang" in ages);
+	// -> true
+	console.log("toString" in ages);
+	// -> true !!!!!!!!!!!!!!!!!!!!!!!
+	
+	plain objects derive from Object.prototype, thus toString is true. As such using plain objects as maps is not
+	a good idea.
+	you can create objects with no prototype with Object.create(null)
+
+	ages = Object.create(null);
+
+	ages.Boris = 39
+	ages.Liang = 22
+	ages.Júlia = 62
+
+	console.log(Object.getPrototypeOf(ages));
+	//->null
+
+	/*However object property names must be strings, if you need a map whose keys can't easiliy be converted to strings
+	such as objects, you can't use an object as your map*/
+	
+	//fortunately JS comes with a class called Map
+	
+	let ages = new Map()
+	ages.set("Boris", 39);
+	ages.set("Liang", 22);
+	ages.set("Júlia", 62);
+	
+	console.log(ages.get("Boris"))
+	console.log(ages.has("Liang"))
+
+note: you can use 
+	property in object //checks properties in object and prototype
+	object.hasOwnProperty(property) //checks properties in object itself only
+	
+Polymorphism
+	just like Array.toString overrride Object.toString
+	
+	you can do that yourself too
+	
+	Rabbit.prototype.toString = function() {
+		return `a ${this.type} rabbit`;
+	};
+	
+	when an object is written with a certain interface that can interact with outside code
+	and the interface can have the same name but different for each object
+	
+	for/ of loops
+		another case of polymorphism
+		
+		such loops expect the data structure to expose a specific interface, which arrays and strings go
+		
+		And we can add this interface to our own objects!!!
+		
+Symbols
+	A way to prevent properties from having the same name in different objects
+
+	when the author claimed that property names are strings, that wasn't the most accurate. Usually they are but, 
+	they can also be symbols. 
+	
+	Symbols are values created with the Symbol function. Unlike strings, newly created symbols are unique, you cannot
+	create the same symbol twice
+		let sym = Symbol("name");
+		console.log(sym == Symbol("name"));
+		
+		Rabbit.prototype[sym] = 55;
+		Console.log(blackRabbit[sym]);
+		
+	can refer to Colt Steele - the complete guide to JS Symbols video, and my own personal notes for it
+		
+
+	btw don't mistaken
+		//object[<string>]
+		console.log(user["id"])
+		//object[symbol]
+		console.log(user[idSym])
+	
+	let toStringSym = Symbol()
+	let stringObject = {
+		[toStringSym]() {return "a rope"}
+	}
+	console.log(stringObject[toStringSymbol]());
+	// -> a rope
+	
+The Iterator Interface
+	objects given to a for/of loop are expected to be iterable. This means it has a Symbol.iterator symbol 
+	(a symbol value defined by the language, stored as a property
+	
+	when called the method should return an object that provides a second interface, iterator. This is the actual
+	thing that iterates. It has a next method that returns the next result. 
+	result should have
+		next value, for next result
+		done value, false if not done, once done true
+		
+	we can directly use this interface ourselves
+	let array = [1, 2]
+	let arrayIterator = array[Symbol.iterator]();  // important create an instant of the iterator so that it keeps it's value
+	console.log(arrayIterator.next());
+	// -> {value: 1, done: false}
+	console.log(arrayIterator.next());
+	// -> {value: 2, done: false
+	console.log(arrayIterator.next());
+	// -> {value: undefined, done: true} //HHHHMMMmmmmm will print this for end of strings to, could it be \0?? possibly not if you refer to the MatrixIterator example below
+	
+	implementation of an iterable two-dimensional array
+		class Matrix {
+			//user should pass a function for element to fill in values, if not left undefined
+			contructor(width, height, element = (x,y) => undefined){
+				this.width = width;									// notice no let keyword
+				this.height = height;
+				this.content = [];
+				
+				for(let y = 0; y < height; y++){					// stil able to get height and width from argument without this. preface but content definitely needs this. preface
+					for(let x = 0; x < width; x++){
+						this.content[y * width + x] = element(x, y); //????????
+					}
+				}
+			}
+			
+			get(x, y){
+				return this.content[y * this.width + x];
+			}
+			
+			set(x, y, value){
+				this.content[y * this.width + x] = value;
+			}
+		}
+
+//Note: it is often that the iterator is declared within the Matrix
+
+//FUCKFUCKFUCK google chrome console does not spot syntax errors, when you misspell constructor
+
+Getters, Setters and Statics
+	Interfaces consists mostly of methods, it is also ok to include propeties that hold non-function values. e.g map objects 
+	have a size property that holds the number of keys are stored in them.
+
+	let yoMom = {
+		constructor(){
+			this.size = 600
+		}
+	
+		get getSize() {
+			return this.size;
+		}
+		
+		set setSize(size) {
+			this.size = size;
+		}
+	}
+	
+	
+	// notice getSize and setSize didnt have ()
+	console.log(yoMom.getSize);
+	yoMom.setSize = 800;
+	console.log(yoMom.getSize);
+
+	NOTE: methods should not have the same bindings as variables declared in constructor??????
+	HHHHMMMMmmmm ACTUALLY NO, getters and setters can have the same name as variables
+	check "dcode - what are getters and setters" tutorial or personal notes
+		//so you can use the same binding for getters/setters and variables just include _
+		class Person {
+			constructor(name){
+				this.name = name;
+			}
+
+			set name(value) {
+				if (value.length > 10) {
+					console.log("name too long")
+				} else {
+					this._name = value;
+				}
+			}
+
+			get name() {
+				return this._name.toUpperCase();
+			}
+		}
+	Getters and Setters
+		define custom logic about getting or setting data from a object 
+		
+	Note:
+		set functions only allow one value
+		
+dcode - JavaScript Classes #3 Static Methods
+	// static methods are define on a class but not part of instantiated object
+	// kind of like helper or utility methods, useful to the class but doesn't have an object bound to them
+	
+	inside class declarations, methods that have static written before their name are stored on the constructor.
+	
+Inheritance
+	some matrices are known to be symmetric.
+	if you mirror a symmetric matrix around its top-left-to-bottom-right diagonal, it stays the same
+	in other words, the value stored at x,y is always the same as that at y, x
+	
+	JS prototype system makes it possible to create a new class, much like the old class, but with new definitions for
+	some of its properties.
+	
+	//This is called inheritance
+		class SubClass extend SuperClass {
+			constructor(arg1, arg2, arg3){
+				super(arg1, arg2);
+			}
+			
+			set(value){
+			}
+		}
+	//instead of being based on the default Object prototype is based on the SuperClass
+	
+	Inheritance is quite a controversial idea
+	
+instanceof Operator
+	returns boolean value
+	<instance> instanceof <class/object>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

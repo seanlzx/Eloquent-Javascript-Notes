@@ -1,0 +1,10 @@
+the rest of the notes are in the robot.html file
+
+
+to run a function and pass its return value 
+as an argument
+
+function(func())
+
+to pass the function itself as a argument
+function(func)

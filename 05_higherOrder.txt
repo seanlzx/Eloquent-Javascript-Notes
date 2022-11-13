@@ -1,0 +1,277 @@
+"Tzu-li and Tzu-ssu were boasting about the size of their latest programs. ‘Two-hundred thousand lines,’ 
+said Tzu-li, ‘not counting comments!’ Tzu-ssu responded, ‘Pssh, mine is almost a million lines already.’ 
+Master Yuan-Ma said, ‘My best program has five hundred lines.’ Hearing this, Tzu-li and Tzu-ssu were 
+enlightened."
+- Master Yuan-Ma, The Book of Programming
+
+There are two ways of constructing a software design: One way is to make it so simple that there are 
+obviously no deficiencies, and the other way is to make it so complicated that there are no obvious 
+deficiencies.
+-C.A.R. Hoare, 1980 ACM Turing Award Lecture
+
+two examples
+	// 1.
+		let total = 0, count = 1;
+		while (count <= 10) {
+		  total += count;
+		  count += 1;
+		}
+		console.log(total);
+	
+	// 2.
+		let sum = ...numbers => {
+			sum = 0;
+			for(let num of numbers) sum += num;
+		}
+		
+		let range = (start, end, increment = 1){
+			if (start === end){
+				return [start];
+			}
+			
+			if (start > end){
+				increment = -1
+			}
+			
+			array = []
+			
+			for(let i = start; i != end; i++)
+				array.push(i);
+		}
+
+		console.log(sum(range(1, 10)));
+	/* 2. despite being bigger, is arguably, better, the functions can be reused, it abstracts everything down 
+	into one simple to understand line. */
+	
+abstraction
+	hiding details to allow us to talk about problems at a higher(more abstract) level
+	
+	As an analogy, compare these two recipes for pea soup. The first one goes like this:
+		Put 1 cup of dried peas per person into a container. Add water until the peas are well covered. 
+		Leave the peas in water for at least 12 hours. Take the peas out of the water and put them in a cooking pan. 
+		Add 4 cups of water per person. Cover the pan and keep the peas simmering for two hours. Take half an 
+		onion per person. Cut it into pieces with a knife. Add it to the peas. Take a stalk of celery per person. 
+		Cut it into pieces with a knife. Add it to the peas. Take a carrot per person. Cut it into pieces. With a knife! 
+		Add it to the peas. Cook for 10 more minutes.
+
+	And this is the second recipe:
+		Per person: 1 cup dried split peas, half a chopped onion, a stalk of celery, and a carrot.
+
+		Soak peas for 12 hours. Simmer for 2 hours in 4 cups of water (per person). Chop and add vegetables. Cook for 10 more minutes.
+	
+	The second is shorter and easier to interpret. But you an understanding of cooking-related words such as soak, 
+	simmer, chop, and, I guess, vegetable.
+	
+	the first recipe is at a low level of abstraction, that makes you go step by step, possibly blinding you 
+	from higher level concepts
+	
+	it is important to be aware of your level of abstraction, not to low
+	
+Abstracting repetition
+	function repeat(n, action) {
+	  for (let i = 0; i < n; i++) {
+		action(i);
+	  }
+	}
+
+	repeat(3, <insert function>);
+	
+Higher-order
+	functions that operate on other functions, either by taking them as arguments or returning them, are 
+	called higher-order functions. 
+	
+	higher-order functions allow us to abstract over actions, not just values
+	
+	//example a functions that returns a function
+	let greaterThan = n => return m => m > n;
+	
+	let isGreaterThan10 = greaterThan(10);
+	console.log(greaterThan10(11));
+	
+	//my own widdle example
+			
+		//define multiply and range
+
+		let fac = n => multiply(range(1,n));
+		
+		console.log(fac(10));
+		
+	function noisy(func) {
+	  return (...args) => {
+		console.log("calling with", args);
+		let result = func(...args);
+		console.log("called with", args, ", returned", result);
+		return result;
+	  };
+	}
+	noisy(Math.min)(3, 2, 1);
+	// → calling with [3, 2, 1]
+	// → called with [3, 2, 1] , returned 1
+	
+	// My own widdle example
+		let narrate = func => {
+			return (...argument) => {
+				console.log(`argument: ${argument}`);
+				let result = func(...argument); //remember to destruct argument array with ... for Math.min
+				console.log(`result: ${result}`);
+				return result
+			}
+		}
+		narrate(parseInt)(" \n\n\n\t\t20 years old"); //note parseInt only works for strings that start with a number, allows white space to left of number
+
+	,forEach // allows you to run methods on each element of an array
+	
+Script data det
+	{
+	  name: "Coptic", //name
+	  ranges: [[994, 1008], [11392, 11508], [11513, 11520]], //ranges of unicode ranges, may have intersections with other languages
+	  direction: "ltr", //ltr for left to right rtl for right to lest
+	  year: -200, // approx year of origin
+	  living: false, // whether still in use
+	  link: "https://en.wikipedia.org/wiki/Coptic_alphabet" // a link for more information
+	}
+	
+A filter function and method
+	//btw this is a pure function
+	let filter = (array, testFunc) => {
+		let filteredArray = []
+		for(let element of array) {
+			if (testFunc(element)) filteredArray.push(element)
+		}
+		return filteredArray;
+	}
+	
+	console.log(filter(array, func));
+	
+	//btws .filter is built in
+	<array>.filter
+	
+A map function and method
+	let map = (array, transform) => {
+		let transformedArray = []
+		for (let element of array) transformedArray.push(transformed(element));
+		return transformedArray;
+	}
+	
+	//also standard or built in property
+	<array>.map
+	
+Reduce function and method (sometime called fold), a that method that returns a single value from an array parameter
+	let reduce = (array, combine, start) => {
+		if(start === undefined){
+			current = array[0];
+			for (let i = 1, length = array.length; i < length; i++){
+				current = combine(current, array[i]);
+			}
+		}
+		else{
+			current = start;
+			for (let element of array){
+				current = combine(current, element);
+			}
+		}
+		return current;
+	}
+	
+	//also a standard or built in property
+	<array>.reduce(func, initialValue);
+	
+note: 
+	remember a difference between methods and functions
+	<object or value>.method
+	func(<object or value>)
+	
+Composability
+	//an example of finding the script with the highest character count using reduce twice
+	function characterCount(script) {
+	  return script.ranges.reduce((count, [from, to]) => {
+		return count + (to - from);
+	  }, 0);
+	}
+
+	console.log(SCRIPTS.reduce((a, b) => {
+	  return characterCount(a) < characterCount(b) ? b : a;
+	}));
+	
+	//an example without reduce
+	let biggest = null;
+	for (let script of SCRIPTS) {
+	  if (biggest == null ||
+		  characterCount(biggest) < characterCount(script)) {
+		biggest = script;
+	  }
+	}
+	console.log(biggest);
+	//much simpler
+	
+higher-order functions shine when you need to compose operations
+	
+	//much easier to read
+		function average(array) {
+		  return array.reduce((a, b) => a + b) / array.length;
+		}
+
+		console.log(Math.round(average(
+		  SCRIPTS.filter(s => s.living).map(s => s.year))));
+		// → 1165
+		console.log(Math.round(average(
+		  SCRIPTS.filter(s => !s.living).map(s => s.year))));
+		// → 204
+		
+		PIPELINES, my two favorite things, pipes and lines
+	
+	//harder to read
+		let total = 0, count = 0;
+		for (let script of SCRIPTS) {
+		  if (script.living) {
+			total += script.year;
+			count += 1;
+		  }
+		}
+		console.log(Math.round(total / count));
+		// → 1165
+		/* harder to read, intermediate results are represented as coherent vvalues, more work to 
+		extract to separate functions*/
+		
+	//the second is fast THOUUUGH
+//many different ways to solve the same problems with different pros and cons
+
+.some another higher order array method
+	array.some(func)
+	/*function runs over the array returnings a boolean value, if any of the the boolean values
+	are true, than some returns true*/
+
+strings and character codes
+	recall that unicode uses 16 bits, but there are way more than 2^16 characters use by unicode.
+	So UTF 16 was invented
+		describes most common characters using a single 16-bit code unit but uses a pair of two 
+		such units for the remained
+		
+	generally considered a bad idea today.
+		easy to write programs that pretend code units and characters are the same thing, which is 
+		fine if your language doesn't use two-unit characters.
+		
+	that said now with EMOJIS, everybody uses tow-unit characters
+	
+	however operations on JS strings deal only with code units,
+		you might have issues with
+			string.length
+			string[<insert emoji index>]
+			
+			// returns code unit not a full character code
+			string.charCodeAt(<insert emoji index>)
+		
+		/* codePointAt, introduced late recoginze a full unicode character, however it still uses  
+		an index into a sequence of code units*/
+		string.codePointAt(<insert emoji index>)
+		
+		WOOAH, so the for/of loop loops through each characters rather than unit code
+	
+.findIndex // similar to indexOf, but instead of looking for a specific value, it finds the
+first value for which the given function returns true (might be good for an array of objects)
+
+array.every // similar to .some, but requires everything to be true
+
+De Morgan’s laws
+	a && b && c == !(!a || !b|| !c||)
+	array.every(test) == !array.some(n => !test(n))

@@ -1,0 +1,382 @@
+"On two occasions I have been asked, ‘Pray, Mr. Babbage, if you put into the machine wrong figures, 
+will the right answers come out?’ [...] I am not able rightly to apprehend the kind of confusion of 
+ideas that could provoke such a question."
+- Charles Babbage, passages from the life of a philosopher
+
+Numbers, Booleans and Strings are the atoms that data structures are built from
+
+properties
+	Numbers, Booleans and Strings have properties
+	properties can be accesed via "." or "[<insert property]" example:
+		string.length
+		number.max
+	almost all javascript values have properties except null and undefined
+	
+"." and "[<insert propety>]"
+	-when using a dot, the word after the dot is the literal name of the property
+	-when using square brackets, the value in the square brackets is evaluated to get the property name
+	
+	the dot only works only properties that happened to have name that looks like a binding example
+		.length
+		.max
+	for properties for example called 2 (starts with number) or "license plate" (has spacing) , use square brackets
+		object[2]
+		object["license plate"]
+		
+	elements in an array are stored as array properties, using numbers as property names
+	
+	length is also a property in an array. because it happens to have a valid binding name
+	you can just use array.length but array["lenght"] works too
+	
+methods
+	object properties can also hold function values ie
+		strings have .toUpperCase()
+		
+	note: why is it unlike c jave script can use call a values with a function that does not have an argument
+		in C you would do this
+			toUpper(string)
+		whereas javascript
+			string.toUpperCase()
+			
+	properties that contain functions are generally called methods of the value
+	
+	.push //push to end of array
+	.pop // removes the last element of array
+	/* the terms push and pop are are borrowed from operations on a stack, 
+	to push to the top of a stack, to pop from the top of a stack */
+	
+Objects
+	how to create object
+		let objectName = {
+			property1 : "value1",
+			property2 : [1,2,3],
+			"property 3": "value4" // a property name that isn't considered a valid binding will require quotes
+		}
+		
+		//can add properties as such
+		objectName.property4 = false;
+		
+		note: so braces have to uses in javascript, 
+			- to denote a block of statements
+			- to describe an object
+			
+	trying to read a property that doesn't exist from an object will return undefined
+	console.log(text.apunehneh)
+	// -> undefined
+	
+	you remove properties from an object with the delete operator (delete <object>.<property>)
+		not common thing to do though
+	
+	can use boolean ternary operator in to check if a property exist for an object (<property> in <object>)
+	
+	note: setting a property to undefined and deleting it is two different things
+	
+	can use Object.keys(<object>) to find out what properties the object has.
+	
+	can copy all properties from one object to another with Object.assign
+		Object.assign(<new object>, <old object>);
+		
+Mutability
+	values like numbers, strings, and boolenas are immutable, you can't change the value you can only merely 
+	reassign them
+	
+	objects however are mutable
+	
+	two numbers bindings that happen to have the same number are equal. however objects that contain have the same 
+	properties and values are not necessarily equal
+		let object1 = {value: 10};
+		let object2 = object1; // when object2 is called, it's called by reference
+		let object3 = {value: 10};
+
+		console.log(object1 == object2);
+		// → true
+		console.log(object1 == object3);
+		// → false
+
+		object1.value = 15;
+		console.log(object2.value);
+		// → 15
+		console.log(object3.value);
+		// → 
+		
+	Bindings can be changeable (let) or constant
+		with let numbers, strings, booleans and objects can point to a new value
+		with const the above cant point to a new value, however for objects the value can change
+		
+		const score = {visitors: 0, home: 0};
+		// This is okay
+		score.visitors = 1;
+		// This isn't allowed
+		score = {visitors: 1, home: 1};
+		
+shorthand to create object
+	fruits = ["apple", "banana"];
+	vege = "brocoli";
+	//in braces, if the property name isn't followed by a value, the variable values is chosen as a value
+	obj = {fruits, vege, meats: ["chicken", "duck"]}; 
+		
+correlation
+	the measure of dependence between statistical variables, do not mistaken for programming variable
+	
+	correlation between statisitic variables expressed in measurement between -1 to 1.
+	-1 meaning is one is true the other is false, 1 being if one is true the other is true, 0 being no correlation
+	
+	can use phi coefficient (google symbol). the formula input is a frequency table, containing the 
+	combinations of variables observed, the output being -1 to 1.
+	table:
+		"no squirrel, no pizza": 76 times |  "no squireel, had pizza": 09 times
+		"Be squirrel, no pizza": 04 times |  "be squirrel, had pizza": 01 times
+		
+	let table = t 
+		refer to formuale from book
+		t1. sumOfSquirrelTrue = 4 + 1
+		t0. sumOfSquirrelFalse = 76 + 9
+		t.1 sumOfPizzaTrue = 9 + 1
+		t.0 sumOfPizzaFalse = 76 + 04
+		phi coefficient = t[1,1]*t[0,0] - t[1,0]*t[0,1] / square(t1.*t0.*t.1+t.0)
+		1*76 - 4*9 / square((4+1)*(76+9)*(9+1)*(76+4)) = 0.069
+		//tiny, eating pizza does not appear to have influence on transforming in weresquirrel form
+		
+	to do this in javascript
+		squirrelPizzaTable = [[76, 9], [4, 1]]
+		//so table[0][0] refers to top left, table[1][1] refers to bottom right
+		//HOWEVER since table is 2 by 2 can do this
+		function phi(table) {
+		  return (table[3] * table[0] - table[2] * table[1]) /
+			Math.sqrt((table[2] + table[3]) *
+					  (table[0] + table[1]) *
+					  (table[1] + table[3]) *
+					  (table[0] + table[2]));
+		}
+
+		console.log(phi([76, 9, 4, 1]));
+		//notice 0,1,2,3 in decimal correlate to 00, 01, 10, 11 is binary
+		
+		array.includes(<element>) return true or false
+		
+	iterating over strings or arrays
+		for (let element of array) {
+			console.log(element);
+		}
+		
+		for (let character of string) {
+			console.log(string);
+		}
+		
+	may revise ctrl + f "the final analysis"
+			
+Further Arrayology
+	.push(element) //add item to end of array, also returns new count of array
+	.pop() //remove item from end of array, also returns element
+	
+	.unshift(element) //add item to start of array, also returns new count of array
+	.shift() //remove item from start of array, also returns element
+	
+	.indexOf(<element>, <optional start search here>) // searches from start of list towards the right, return index
+	.lastIndexOf(<element>, <optional start search here>) // searches from end of list towards the left, return index
+	//the above return -1 if it can't find the element
+	
+	.slice(<optional startindex inclusive>, <optional endindex exclusive>);
+	
+	bothFruitAndVegeList = fruitList.concat(vegeList);
+	//creatively can be used to remove an item from array
+	array = array.slice(0, index).concat(array.slice(index+1));
+	
+ways to copy array
+	//copy by reference, whats even the point
+		newArray = oldArray;
+	
+	//copy elements by value excpet objects and arrays(SHALLOW COPIES)
+		//for single dimesion arrays, copied by value
+		arrayCopy = [...ogArray]; //not safe for multi-dimensional array which are copied by reference instead
+		//effectly same as loop through method
+		// what about an array of objects.....???????????????????? doesn't seem to work
+		
+		//map method
+		newArray = oldArray.map(x => x);
+		also assings objects and arrays by reference
+		
+		.map
+		.filter
+		.reduce
+		.slice
+		.concat
+		//boths this methods will return objects and arrays by reference
+	
+	//ways to copy array of objects or multi-dimensional array (DEEP COPY)
+		//could do a recursive function to copy entire multi-dimensional arrays...??????????
+		//josn stringify and parse
+		
+string, number and Booleans
+	this are NOT objects, you cannot add properties to them though the language will not complain, they are immutable.
+	
+	they do however have built in properties
+		strings
+			.slice
+		
+			.indexOf(<string>) //also returns -1 if cannot find
+			/* note: indexOf for string can search for strings of multiple characters, whereas arrays.indexOf can only search 
+			a single element */
+			
+			.trim 
+			//removes whitespace(spaces, newlines, tabs, etc), won't remove spaces in between words :), even if multiple spaces :(
+			
+			.padStart(<desiredTotalLength>, <paddingCharacter>);
+			let numVar = 7
+			let paddedNumString = String(numVar).padStart(2, "0");
+			console.log(paddedNumString);
+			// -> 07
+	
+			string.split(<string>) //returns array when <string> occurs, split into separate element
+			
+			array.join(<string>) //returns string, places <string> inbetween
+			//.split and .join can used in conjuction to replace certain characters with others similar to replace method
+	
+			"hi".repeat(7);
+			// - > "hihihihihihihi"
+	
+Rest Parameters
+	// a way for a function to take varied number of arguments
+	//example with our own verion of max
+	/* the ... preface in the parameters allows for this, the parameter binds to an array containing all arguments.
+	any parameters before the rest parameter wont be bound to it */
+	let max = ...numbers => {
+		let result = -Infinity;
+		for (let number of numbers){
+			if (number>result) result = number
+		}
+		return result;
+	}
+	console.log(max(6,3,-5,7));
+	
+	//similarly you can call a function with ...array, which spread the elements into separate arguments
+	let argumentList = [4, 7];
+	console.log("wut chu lookin' at".slice(argumentList));
+	
+	the triper-dot operator can also be used in array assignments
+	
+	words = ["huh", "my", "name", "is", "what", "my", "name", "is", "chikaChika"]
+	console.log(["my","name","is", ...words,"slim-shady"]);
+	
+The Math Object
+	the Math object is just a container to group a bunch of related functionality, there is only one Math object
+	and it's almost never useful as a value, rather it provides a namepase so all these functions and values do not
+	have global bindings
+	
+	having to many global bindings pollutes the namespace. making it more likely to overwrite existing bindings.
+	
+	since the functions are safely tucked in javascript's math functions. you can create your own max, min, sqrt functions
+	without having to worry about overwriting the ones javascript provides.
+	
+	javascript will only warn you what you are defining binding with let and const. how ever it won't warn you for standard 
+	bindings, nor those declared with var or with function.
+	
+	Math.cos()
+	Math.sin()
+	Math.tan()
+	
+	//inverses
+	Math.acos()
+	Math.asin()
+	Math.atan()
+	
+	Math.PI // an old tradition to write constants in all caps
+	
+	Math.random() // returns a pseudorandom number between 0(inclusive) and 1*(exclusive
+	//computers are deterministic (always the same value for same input)
+	/* it is possible to produce numbers that appear random.
+	the machine stores a hidden value, whenever you ask for a random number, it performs
+	complicated computations on this hidden value to create a new value. it stores the new value
+	and returns some number derived from it */ 
+	
+	Math.floor() //rounds down to nearest whole number
+	Math.ceil() //rounds up to nearest whole number
+	Math.round() //rounds to nearest whole number
+	Math.abs() // negate negative values
+	
+Destructuring
+	going back to phi function
+	//a better way to write it
+	function phi([n00, n01, n10, n11]) {
+		return (n11 * n00 - n10 * n01) /
+            (n01 + n11) * (n00 + n10));
+	}
+	console.log(phi(tableList));
+	//the square brackets in the parameter is able to "look inside" the elements of an array argument
+	
+	My own widdle example
+		let list = ["pie", "pizza", "pear"];
+		[good, veryGood, huh] = ["pie", "pizza", "pear"];
+
+		console.log(good)
+	
+	let {name} = {name: "Faraji", age: 23};
+	console.log(name);
+	//similarly for objects
+
+	my own widdle example
+		earth = {name:"earth", composition: ["earth", "water", "air", "fire"], order: 3}
+		let {order} = earth;
+		console.log(`earth is the ${order}th planet`);
+	
+JSON
+	properties merely reference their values than contain it. object and array bindings are merely pointers
+	
+	to get to the value, we can serialize(convert to a flat description) it. a popular serialisation format is
+	JSON (JavaScript Object Notation). widely used for data storage and communication format on the web, even for
+	languages aside from JS.
+	
+	JSON way of writing objects and arrays vs JS, 
+		all property names to be surrounded by double quotes
+		only simple data expressions, no function calls, bindings or anything that involves computation
+		no comments
+		
+	JSON.stringify
+	JSON.parase
+	
+others
+	array methods
+		.reverse()
+		
+List 
+	hmmm... very similar to node list
+	
+	let list = {
+	  value: 1,
+	  rest: {
+		value: 2,
+		rest: {
+		  value: 3,
+		  rest: null
+		}
+	  }
+	};
+	
+	if create two values {value: 0, rest: list}, {value:-2, rest:list}, the are both two separate indepedent list that
+	happen to share the strucutre that makes their last three elements
+	
+	//iterating through a list
+	for (let node = list; node; node = node.rest) 
+	
+chapter 4 exercise prepend
+	let prepend = (value, rest) => {value, rest};
+	//function above is supposed to return a list object, it doesn't work
+	//rmb {} in js has a double meaning to denote a block of code and object
+	// this will work
+	let prepend = (value, rest) => {
+		return{value, rest}
+	};
+	
+note: for whatever reason typeof null is object
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
