@@ -37,3 +37,33 @@ chrome > dev tools > sources
     can place breakpoints here
 
 not all problems can be prevented by the programmer, is say your program communicates with the outside world
+
+you can raise exceptions with throw keyword
+    can also you an error constructor to create the exception value which may also gather information 
+    about the call stack (the stack trace). this information is stored in the stack property. try e.stack
+
+when doing exception handling. ensure that vital mistakes aren't being made such as.
+    when doing a transfer of money from one account to another
+        deducting money from one account
+        an error occurs before the money can be added to another account
+        
+    ways to handle
+        creating a new binding and only replacing the actual bindings at the end
+        the 'finally' block
+
+        function transfer(from, to, amount)
+            if account[from] < amount return
+            progress = 0;
+                try {
+                    deduct from account[from]
+                    progress = 1
+                    add to account[to]
+                    progress = 2
+                } finally {
+                    if (progress != 2) {
+                        accounts[from] += amount;
+                    }
+                }
+            // basically this will track progress and if the progress never reach tyhe final stage it repairs the damage
+
+            backend should always handle verification before updating the database
