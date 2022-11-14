@@ -7,9 +7,10 @@ Numbers, Booleans and Strings are the atoms that data structures are built from
 
 properties
 	Numbers, Booleans and Strings have properties
-	properties can be accesed via "." or "[<insert property]" example:
+	properties can be accesed via "." or "[<insert string of property name>]" example:
 		string.length
 		number.max
+        string['length']
 	almost all javascript values have properties except null and undefined
 	
 "." and "[<insert propety>]"
@@ -26,13 +27,13 @@ properties
 	elements in an array are stored as array properties, using numbers as property names
 	
 	length is also a property in an array. because it happens to have a valid binding name
-	you can just use array.length but array["lenght"] works too
+	you can just use array.length but array["length"] works too
 	
 methods
 	object properties can also hold function values ie
 		strings have .toUpperCase()
 		
-	note: why is it unlike c jave script can use call a values with a function that does not have an argument
+	note: why is it unlike c java script can use call values with a function that does not have an argument
 		in C you would do this
 			toUpper(string)
 		whereas javascript
@@ -67,7 +68,7 @@ Objects
 	you remove properties from an object with the delete operator (delete <object>.<property>)
 		not common thing to do though
 	
-	can use boolean ternary operator in to check if a property exist for an object (<property> in <object>)
+	can use boolean ternary operator in to check if a property exist for an object (<propertyname as string> in <object>)
 	
 	note: setting a property to undefined and deleting it is two different things
 	
@@ -106,6 +107,7 @@ Mutability
 		const score = {visitors: 0, home: 0};
 		// This is okay
 		score.visitors = 1;
+
 		// This isn't allowed
 		score = {visitors: 1, home: 1};
 		
@@ -188,8 +190,8 @@ ways to copy array
 	
 	//copy elements by value excpet objects and arrays(SHALLOW COPIES)
 		//for single dimesion arrays, copied by value
-		arrayCopy = [...ogArray]; //not safe for multi-dimensional array which are copied by reference instead
-		//effectly same as loop through method
+		arrayCopy = [...oldArray]; //for multi-dimensional arrays the elements which are array which are copied by reference instead
+		//effectively same as loop through method
 		// what about an array of objects.....???????????????????? doesn't seem to work
 		
 		//map method
@@ -251,7 +253,7 @@ Rest Parameters
 	
 	//similarly you can call a function with ...array, which spread the elements into separate arguments
 	let argumentList = [4, 7];
-	console.log("wut chu lookin' at".slice(argumentList));
+	console.log("wut chu lookin' at".slice(...argumentList));
 	
 	the triper-dot operator can also be used in array assignments
 	
@@ -260,7 +262,7 @@ Rest Parameters
 	
 The Math Object
 	the Math object is just a container to group a bunch of related functionality, there is only one Math object
-	and it's almost never useful as a value, rather it provides a namepase so all these functions and values do not
+	and it's almost never useful as a value, rather it provides a namespace so all these functions and values do not
 	have global bindings
 	
 	having to many global bindings pollutes the namespace. making it more likely to overwrite existing bindings.
@@ -268,8 +270,8 @@ The Math Object
 	since the functions are safely tucked in javascript's math functions. you can create your own max, min, sqrt functions
 	without having to worry about overwriting the ones javascript provides.
 	
-	javascript will only warn you what you are defining binding with let and const. how ever it won't warn you for standard 
-	bindings, nor those declared with var or with function.
+	when defining a binding with name already taken, JS will only warn when using let and const. how ever it won't warn 
+    you for standard bindings, nor those declared with var or with function.
 	
 	Math.cos()
 	Math.sin()
@@ -306,12 +308,14 @@ Destructuring
 	
 	My own widdle example
 		let list = ["pie", "pizza", "pear"];
-		[good, veryGood, huh] = ["pie", "pizza", "pear"];
+		[good, veryGood, huh] = list
 
 		console.log(good)
+        //-> 'pie'
 	
 	let {name} = {name: "Faraji", age: 23};
 	console.log(name);
+    //-> Faraji
 	//similarly for objects
 
 	my own widdle example
@@ -332,7 +336,7 @@ JSON
 		no comments
 		
 	JSON.stringify
-	JSON.parase
+	JSON.parse
 	
 others
 	array methods

@@ -23,7 +23,7 @@ variables within functions like python are local
 
 scope
 	to declare a global variable, just declare it outside a function
-		do you have to global when using a global variable within a function??????
+		do you have to use global keyword when using a global variable within a function??????
 	
 	- bindings declared with "let" and "const" are local to the block that they are declared in
 	- in pre 2015 JavaScript, only functions created new scopes, so the older "var" is visible 
@@ -97,12 +97,20 @@ Functions can be called with more arguments, or less arguments than it's paramet
 	
 Closure
 	// the returned function is than called twice with different values
-	let helloFuncDude = hello("dude");
-	let helloFuncAbe = hello("abe");
-	helloFuncDude();
+	function helloFuncDude = hello("dude");
+	function helloFuncAbe = hello("abe");
+	console.log(helloFuncDude);
 	// prints dude
-	helloFuncAbe();
+	console.log(helloFuncAbe);
 	// prints abe
+
+    function salutations(prefix){
+        return name => `${prefix} ${name}`;  
+    }
+
+    mr = salutations('Mister')
+    mrbean = mr('Beandaminster')
+    console.log(mrbean)
 	
 	/*this demonstrates that local bindings are created anew for every call, and different calls can't 
 	override one another's local bindings.

@@ -67,3 +67,39 @@ when doing exception handling. ensure that vital mistakes aren't being made such
             // basically this will track progress and if the progress never reach tyhe final stage it repairs the damage
 
             backend should always handle verification before updating the database
+
+catching and recognizing a specific exceptions=
+    class InputError extends Error {}
+    // the new error class extends Error
+    // doesn't define its own constructor, in fact doesn't define anything
+    // behaves like Error object except that they have different class by which we can recognize them
+
+    function promptDirection(question) {
+        let result = prompt(question);
+        if (result.toLowerCase() == "left") return "L";
+        if (result.toLowerCase() == "right") return "R";
+        throw new InputError("Invalid direction: " + result);
+    }
+
+    try {
+        let dir = promptDirection("Where?");
+        console.log("You chose ", dir);
+        break;
+    } catch (e) {
+        if (e instanceof InputError) {
+            console.log("Not a valid direction. Try again.");
+        } else {
+            throw e;
+        }
+    }
+
+Javascript assertions
+    just do condition checking that throws an error 
+    to avoid making too much code noise, only use for common mistakes
+    
+    function firstElement(array) {
+        if (array.length == 0) {
+            throw new Error("firstElement called with []");
+        }
+        return array[0];
+    }
