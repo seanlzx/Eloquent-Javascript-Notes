@@ -1,4 +1,4 @@
-"Some people, when confronted with a problem, think ‘I know, 
+"Somepeople, when confronted with a problem, think ‘I know, 
 I’ll use regular expressions. Now they have two problems."
 -Jamie Zawinski
 
@@ -12,16 +12,16 @@ https://regexr.com
 
 over the years the programming tools and technique that survived and spread, were not necessary the 
 pretty and brilliant ones. Rather the ones that function well enough within their niche or that happen 
-to be integrated with another successful pice of technology.
+to be integrated with another successful piece of technology.
 
 Regular Expressions
     a small separate language that is part of JS and other languages and systems
 
-    a way to describe pattern in string data
+    a way to describe patterns in string data
 
     teribbly awkward and extremely useful
-        syntax if criptic
-        programming nterface provided by JS for them is clumsy
+        cryptic syntax
+        programming interface provided by JS for regExp is clumsy
 
         powerful tool for inspecting and processing strings
 
@@ -35,16 +35,16 @@ Creating a Regular Expressions
         # when using the RegExp constructor, the pattern is written as a normal string, 
         # so the usual rules apply for backslashes
     
-    2. wirtten as a literal value by enclosing with /
+    2. written as a literal value by enclosing with /
         let re2 = /abc/; 
 
         # weirdness
         #   a. since a forward slash encloses the pattern, we need to escape any forward slashes we wish
         #       to be a part of the pattern '\/'. 
-        #   b. backslashes that arent part of character codes will be preserved
-        #       so \n, \t... will be normal, but any other random backslash will be preserved
+        #   b. backslashes that arent part of character codes(\n, \t...) will be preserved
+        #       so \n, \t... will work as usual, but any other random backslash will be preserved
         #   c. some characters such as '?' and '+' have special meanings in regular epressions
-                if you wish to use the characters of teh above itself, must precede with a '\'
+                if you wish to use the characters of the above itself, must precede with a '\'
 
 Testing for matches
     console.log(/waldo/.test('where is thou waldo'))
@@ -56,7 +56,7 @@ Testing for matches
     (uuuhhhh, ddduuuuhh sherlock)
    
 Sets of characters
-    finding whether a string contains a strings can be done with indexof
+    finding whether a string contains a string can be done with indexof
     Regular expressions allow us to express more complicated patterns
 
     say we want to find any number, enclosing a set of characters in square brackets, will do the trick
@@ -134,8 +134,10 @@ Sets of characters
         1. SUBEXPRESSION GROUPING, to use an operator like * or + on more than one element at a time, use parenthesis, 
         2. puting an i after the closing /, makes the expression case insensitive
             let cartoonCrying = /boo+(hoo+)+/i;
-            console.log(cartoonCrying.test("Bbooooohodasooasdohbsdfoohooo"));
+            console.log(cartoonCrying.test("Boohoooohoohooo"));
             // → true
+            // massive f*$##* headache, ok, think of the words enclosed in parenthesis as a single character
+                (ha+)+ beautfitul
 
         matches and groups
             RegExps also have an exec method that will return null or an object with information(properties) 
@@ -169,9 +171,9 @@ Sets of characters
                 console.log(/(\d)+/.exec("123"));
                 // → ["123", "3"]
 
-The Data Class
-    represents dates or rather points in time
-        creating a data object
+The Date Class
+    represents dates or rather points in time 
+        creating a date object
             // no argument, will give the current time
             console.log(new Date())
             // → Mon Nov 13 2017 16:19:11 GMT+0100 (CET)
@@ -213,7 +215,7 @@ The Data Class
                 gets you the year minus 1900
                 mostly useless
 
-creating a data object from a string
+creating a date object from a string
     function getDate(string) {
         let formattedString = /(\d{1,2})-(\d{1,2})-(\d{4})/.exec(string)
         
@@ -258,7 +260,7 @@ Word and String Boundaries
 Choice Patterns
     example:
         // the pipe | denotes choices
-        // test for a nuimber followed by a certain set of words
+        // test for a number followed by a certain set of words
 
         let animalCount = /\b\d+ (pig|cow|chicken)s?\b/;
         console.log(animalCount.test("15 pigs"));
@@ -339,7 +341,8 @@ an example of code to get rid of comments in a javascript code, WITH A TWIST �
 
     so the problem with [^]*
         /* ninja */ tree /* john cena */
-        [^]* will go throught the entire string above🤑, including */ and /* surround tree🤡. than it will back track to match the last */🤡
+        [^]* will go throught the entire string above🤑, including */ and /* surround tree🤡. than it will back track 
+        to match the last */🤡
 
         hence we sayeth reptition operators are greedy
 
@@ -375,7 +378,7 @@ The LastIndex Property
             lastIndex property can be reassigned
             lastIndex updates to the index after a match
 
-the difference between global and sticky ?????
+the difference between global and sticky ????? check website
 
 note:
     console.log('banana'.match(/an/g));

@@ -1,0 +1,349 @@
+"Write code that is easy to delete, not easy to extend"
+-Tef, programming is terrible
+
+the Ideal program
+    a crystal clear structure
+    easy to explain the way it works
+    each part has a well-defined role
+
+typically a real program grows organically
+    new functionality added as new needs come up
+    structuring and preserving structure is extra work
+        work that pays off only in the future
+            so it's tempting to neglect it and allow the parts to be entangled
+
+    this causes two practical issues
+        first understand such a system is hard
+            if everything can tough everything else
+                it's difficult to look at any given piece in isolation
+                forcing you to buildup a holisitc understanding of the entirety
+
+        secondly if you want use any functionality of the program in another area
+            you might find it easier to rewrite it than disentantagle it from it's context
+
+    'Big Ball of Mud'
+        large, structureless programs
+        
+        everything sticks together, when you try to pick out a pieve the whole thing falls apart
+
+Modules
+    a piece of the program that
+        specifies which other pieces it relies on
+        specifies which functionality it provides for other modules to use (its interface)
+
+    module interfaces are similar to object interfaces
+        can make part of the module available to the outsidde and keep the rest private
+        
+        by restricting the ways in which modules interact with each other
+        the system is more akin to lego rather than a big ball of mud'
+
+    the relationship between modules are called dependencies. When a module needs a
+    piece from another module, it depends on that module. 
+    When clearly laid out, depencies can load automatically.
+
+    to separate modules that way they need their own private scope
+
+    putting your JS code into different files does not satisfy these requirements. The files still 
+    share the same global namespace.
+        s*%&$, a html file that uses two external scripts will share the same scope 😩
+
+Packages
+    one advantage of building a program out of separate pieces, is the ability to utilise those
+    pieces in other programs
+
+    so you copy and paste the code from the other program into yours, BUT you find a mistake in it
+    and now you have to correct it in the other program too
+
+    once you start duplicating code, you'll find yourself wasting time and energy moving copies around 
+    and keeping them up-to-date 
+
+    THIS IS WHERE PACKAGES COME IN. a chunk of code that can be distributed (copied and installed). it
+    may contain one or more modules and has information about which other packages it depends on. 
+    Packages also usually come with documentation explaining what it does.
+
+    updates to a package can be updated in the dependants
+
+    This requires infrastructure. A place to store and find packages and a convenient way to install
+    and upgrade them. In the JS world we have NPM (https://npmjs.org)
+
+    NPM is two things
+        1. an online service to download and upload packages
+        2. a program bundled with Node.js that helps you install and manage them
+
+    as of 2018 there are more than half a million different packages available on NPM, a large portion
+    of which is rubbish. But a few gems in the rough.
+
+    by default, you own the copyright to the code you write, and other people would require your permission.
+    but don't be a dick, share your program, be famous amongst the nerds.
+
+    certain packages on NPM require you also use the same license as it, for your program that depends on it.
+    most are less demanding requiring that you keep the license with the code as you distribute it.
+
+    until 2015 JS had no module system. But people needed it and built their own module system on top of JS.
+    You can use JS functions to create local scopes and objects to represent module interfaces.
+
+    refer to testOldSchool.js for old school way of using dependencies
+        this way provided isolation to a certain degree, but it doesn't declare dependencies, it just puts
+        its interface into the global scope and expects it's dependencies if any to do the same
+
+        It's mostly obsolete now
+
+        to make dependency relations parts of the code, we'll have to take control of loading 
+        dependencies. Doing that requires being able to execute strings as code. JS can do this.
+
+Evaluating Data as Code
+    there are several ways to take data (a string of code) and run it as part of the current program
+        1.the most obvious way is eval
+            const x = 13;
+
+            function evalAndReturnX(code){
+            eval(code);
+            return x;
+            }
+
+            console.log(evalAndReturnX("var x = 'big pie'"));
+            // -> big pie
+            console.log(evalAndReturnX("let x = 'best pie'"));
+            // -> 13
+
+            // as you can see the scope is kinda screwy
+
+        2. function constructor, a less scary way is to use the
+        which takes two arguments
+            1. a string which would be the comma-separated list of parameters
+            2. a string containing the function body
+
+        it will wrap the code in a function values so it has it's own scope
+            let whoIsIt = Function('name', "console.log(`It's ${name} bitch`)")
+            whoIsIt('Britney')
+            // -> It's Britney bitch
+        woah this is something I nevr seen or could imagined
+        so the function's scope acts as the module' scope
+
+
+CommonJS
+    the system most widely used approach to bolted-on JS modules is called CommonJS modules.
+    Node.js and most packages on NPM uses it.
+
+    the main concept of CommonJS modules is a function called require
+        when you call the module name of a dependency,
+            it makes sure the module is loaded and returns its interface
+
+    1. the loader wraps the module code in a function, giving it their own local scope
+    2. call required to access their dependencies and put the interface in object bound to exports
+
+    example
+        format-date.js
+            // the modules provides a date-formatting function
+            // uses two packages
+            //      ordinal to convert numbers to strings like '1st' and '2nd'
+            //      date-names to get english names for week days and months
+            // 'Do' is the ordinal day of the month
+
+            // the interface ordinal is a single function
+            // the ordinal package, is not an object, but a function explanation at *
+            const ordinal = require("ordinal");
+            // whereas date-names exports object containing multiple things, destructuring is conveniently 
+            //used to create bindings for imported interfaces
+            const {days, months} = require("date-names");
+
+            // the modules adds the interface to exports so that modules that depend on it get access to it
+            exports.formatDate = function(date, format) {
+            return format.replace(/YYYY|M(MMM)?|Do?|dddd/g, tag => {
+                if (tag == "YYYY") return date.getFullYear();
+                if (tag == "M") return date.getMonth();
+                if (tag == "MMMM") return months[date.getMonth()];
+                if (tag == "D") return date.getDate();
+                if (tag == "Do") return ordinal(date.getDate());
+                if (tag == "dddd") return days[date.getDay()];
+            });
+            };
+
+        now other files can use it
+            test.js
+                const {formatDate} = require("./format-date");
+
+                console.log(formatDate(new Date(2017, 9, 13), "dddd the Do"));
+                // -> friday the 13th
+
+        we can define require in its most minimal form, like this
+            in this example readfile is a made-up function that reads a file and returns its contents 
+            as a string. Standard JavaScript provides no such functionality but different JS environments
+            like the browser and Node.js, provide their own ways to access files
+
+                require.cache = Object.create(null);
+
+                function require(name){
+                    if(!(name in require.cache)){
+                        let code = readFile(name);
+                        let module = {export:{}};
+                        require.cache[name] = module;
+                        let wrapper = Function("require, exports, module", code);
+                        wrapper(require, module.exports, module);
+                    }
+                    return require.cache[name].exports;
+                }
+
+                * so with regards to the ordinal package being a function rather than an object
+                    A quirk with CommonJS modules is, though the module systems creates and empty interface 
+                    object for you bound to exports. You can replace that with any value by overwriting it 
+                    with module.exports. This is done by many modules to export a single value rather than
+                    an interface object.
+
+                so by defining require, exports and module as parameters for the generated wrapper function
+                (and passing the appropriate values when calling it), the loader makes sure the bindings are
+                available in the module's scope.
+
+                the way the string given to require is translated to an actual filename or web address
+                differs in different systems. When it starts with "./" or "../", it is generally interpreted 
+                as relative to the current module's filename.
+
+                when the name isn't relative, Node.js will look for an installed package by that name.
+                In the example code for this chapter, take it as referring to NPM packages. more details on
+                installing and using NPM modules in chapter 20
+
+                an example of using a INI parser from NPM
+                    const {parse} = require("ini");
+                    
+                    console.log(parse("x = 10/ny = 20"));
+                    // -> {x: "10", y: "20"}
+
+ECMAScript Modules
+    CommonJS modules in combination with NPM, have allowed the JS community to start sharing code on a large
+    scale.
+
+    But they remain a bit of a duct-tape hack. 
+        -the notation is awkward
+        -and things added to exports are not available in the local scope
+            rmb when you tried to do export.func1 on a file to test, and you couldn't use the 
+            same function in the same file lol.
+        -because require is a normal function call taking any type of argument, it can be hard to 
+        determine dependencies of a module without running its code
+
+    The JS standard from 2015 introduced its own different module system. usually called 
+    ES modules (ECMAScript). 
+    the main concept of dependencies and modules remain the same but details differ. 
+    
+    The notation is now integrated into the language. 
+        Instead of using a function to access 
+        dependencies. you can use a special import keyword
+            import ordinal from 'ordinal';
+            import {days, months} from 'date-names';
+
+            export function formatDate(date, format){<insert same stuff as above>}
+
+        similary the export keyword may appear in front of a function, class or binding definition
+
+    An ES module interface is not a single value, but a set of name bindings.
+    when you import from another module you import the binding rather than the value.
+    which means an exporting module may change the value of the binding at any time
+    and the modules that import it will see its new value
+        // so basically u don't have to worry if the package updates the names?
+
+    bindings named default will be treated as the module's main exported value.
+    for example when you imported a module like ordinal, without braces around 
+    the binding name, you get the default value. This modules can still export
+    other bindings aside from their default export.
+        export default ["winter", "spring", "summer", "autumn"];
+
+    renaming imported bindings 
+        import {days as dayName} from "date-names";
+
+    another important difference, ES module imports happen before a module's script starts
+    running. That means... 
+        import declarations may not appear inside functions or blocks.
+        the names of dependencies must be quoted strings not arbitrary expressions
+
+    as of 2018, the JS community is in the process of adopting this module style. It's been slow.
+    browsers and Node.js mostly support it, but still has issues. And the discussion of how such modules
+    should be distributed though NPM is still ongoing
+
+    is it very useful to be able to read and write code in both this styles??
+
+Building and Building
+    a lot of JS projects are technically written in JS. There are extensions that are widely used.
+    People often use planned extensions before they are added to the platforms that actually run JS.
+
+    To make this possible, they compile their code, translating it from their chosen JS Dialect, to
+    plain JS, or even a past version so that browsers and older browsers can run it.
+
+    Bundlers
+        fetching a multiple small files over a network is much slower than fetching one big files.
+        So web programmers make use of bundlers, that roll their files into one big file before publishing.
+
+    Minifiers
+        tools that take a JS program, remove comments and whitespace, renaming bindings and replacing pieces
+        of code with equivalent code that take up less space.
+
+    So it is not uncommon for the code that you find in an NPM package to have gone through multiple evolutions.
+        conversion from
+            modern JS to historic JS
+            ES module format to CommonJS
+            bundled
+            minified
+
+        we won't go into details, its boring and rapidly changing
+        JUST NOTE THE CODE YOU RUN IS NOT OFTEN THE CODE AS IT WAS WRITTEN
+
+Module Design
+    structuring programs is one of the subtler aspects of programming. Any nontrivial piece of functionality
+    can be modeled in various ways.
+
+    Good program design is subjective. The best way to learn is just read and work on a lot of programs. You
+    can improve the structure of anything by putting more thought into it.
+
+    One aspect of module design is ease of use. If you are designing something intended for multiple people 
+    or even yourself, especially in the long term or being placed aside. It is helpful to make the interface
+    simple and predictable.
+
+    resume reading on the website...
+
+    tips
+        make your module imitate real life, existing functions
+
+        and if not, you can still make it predicatble making use of simple data structures 
+        and doing only a single thing
+
+        so a focused module that compute values🤠
+        big complicate modules with side effects🤮
+
+        often defining a new data structures can't be avoided,
+        try to use an existing one and the simplest one
+
+        an example of a Dijkstrajs package being used in the robot project
+            const {find_path} = require('dijkstrajs');
+
+            let graph = {}
+            for (let node of Object.keys(roadGraph)) {
+                let edges = graph[node] = {};
+                for (let dest of roadgraph[node]) {
+                    edges[dest] = 1;
+                }
+            }
+        
+        this can be a barrier to composition
+            when various packages use different data structures to describe similar things, combining them
+            is difficult. Therefore, if you want to design for composability, find out what data structures
+            other people are using and try to follow their example.
+
+Circular Dependencies👄
+    say, module A depends on B which depends on A which guess what? depends on B.
+    many module systems simly forbid this
+
+    CommonJS modules allow a limted form of cyclic dependencies
+        as long as the modules
+            do not replace their default exports object
+            don't access each other's interface until after they finish loading
+
+    cyclic dependencies are okay😐
+
+    the require function above suports dependency cycle
+        The trick is that require adds modules to its cache before it starts loading the module. That way, 
+        if any require call made while it is running tries to load it, it is already known, and the current 
+        interface will be returned, rather than starting to load the module once more (which would eventually 
+        overflow the stack).
+
+        If a module overwrites its module.exports value, any other module that has received its interface value 
+        before it finished loading will have gotten hold of the default interface object (which is likely empty), 
+        rather than the intended interface value.
+
