@@ -17,6 +17,7 @@ two examples
 		  count += 1;
 		}
 		console.log(total);
+        //->55
 	
 	// 2.
 		let sum = ...numbers => {
@@ -38,10 +39,11 @@ two examples
 			for(let i = start; i != end; i++)
 				array.push(i);
 		}
+        //->55
 
 		console.log(sum(range(1, 10)));
-	/* 2. despite being bigger, is arguably, better, the functions can be reused, it abstracts everything down 
-	into one simple to understand line. */
+	/* 2. if we count the definition of size and range despite being bigger, is arguably, better, the functions can be reused, 
+    it abstracts everything down into one simple to understand line. */
 	
 abstraction
 	hiding details to allow us to talk about problems at a higher(more abstract) level
@@ -92,6 +94,14 @@ Higher-order
 			
 		//define multiply and range
 
+        let multiply = (...args) =>{
+            let initial = 1
+            for (arg of args){
+                initial = initial * arg 
+            }
+            return initial
+        }
+
 		let fac = n => multiply(range(1,n));
 		
 		console.log(fac(10));
@@ -110,8 +120,8 @@ Higher-order
 	
 	// My own widdle example
 		let narrate = func => {
-			return (...argument) => {
-				console.log(`argument: ${argument}`);
+			return (...arguments) => {
+				console.log(`arguments: ${argumenst}`);
 				let result = func(...argument); //remember to destruct argument array with ... for Math.min
 				console.log(`result: ${result}`);
 				return result
@@ -136,7 +146,8 @@ A filter function and method
 	let filter = (array, testFunc) => {
 		let filteredArray = []
 		for(let element of array) {
-			if (testFunc(element)) filteredArray.push(element)
+			if (testFunc(element)) 
+                filteredArray.push(element)
 		}
 		return filteredArray;
 	}
@@ -149,7 +160,8 @@ A filter function and method
 A map function and method
 	let map = (array, transform) => {
 		let transformedArray = []
-		for (let element of array) transformedArray.push(transformed(element));
+		for (let element of array) 
+            transformedArray.push(transformed(element));
 		return transformedArray;
 	}
 	

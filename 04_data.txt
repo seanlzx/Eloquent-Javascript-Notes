@@ -356,8 +356,8 @@ List
 	  }
 	};
 	
-	if create two values {value: 0, rest: list}, {value:-2, rest:list}, the are both two separate indepedent list that
-	happen to share the strucutre that makes their last three elements
+	if create two values {value: 0, rest: list}, {value:-2, rest:list} that both refer to list, they are both two separate indepedent list that
+	happen to share the structre that makes their remainding elements
 	
 	//iterating through a list
 	for (let node = list; node; node = node.rest) 

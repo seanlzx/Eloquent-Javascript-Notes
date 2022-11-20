@@ -1,0 +1,480 @@
+"Some people, when confronted with a problem, think ‘I know, 
+I’ll use regular expressions. Now they have two problems."
+-Jamie Zawinski
+
+"Yuan-Ma said, 'When you cut against the grain of the wood, much strength is needed. 
+When you program against the grain of the problem, much code is needed."
+-Master Yuan-Ma, The Book of Programming
+
+can use regular expressions in VSCode search and ctrl + f 🤠
+
+https://regexr.com
+
+over the years the programming tools and technique that survived and spread, were not necessary the 
+pretty and brilliant ones. Rather the ones that function well enough within their niche or that happen 
+to be integrated with another successful pice of technology.
+
+Regular Expressions
+    a small separate language that is part of JS and other languages and systems
+
+    a way to describe pattern in string data
+
+    teribbly awkward and extremely useful
+        syntax if criptic
+        programming nterface provided by JS for them is clumsy
+
+        powerful tool for inspecting and processing strings
+
+    so let's understand regular expressions to be a more effective programmer
+
+Creating a Regular Expressions
+    both examples below represent the same pattern, however(note the comments)...
+    1. with a RegExp constructor
+        let re1 = new RegExp("abc")
+
+        # when using the RegExp constructor, the pattern is written as a normal string, 
+        # so the usual rules apply for backslashes
+    
+    2. wirtten as a literal value by enclosing with /
+        let re2 = /abc/; 
+
+        # weirdness
+        #   a. since a forward slash encloses the pattern, we need to escape any forward slashes we wish
+        #       to be a part of the pattern '\/'. 
+        #   b. backslashes that arent part of character codes will be preserved
+        #       so \n, \t... will be normal, but any other random backslash will be preserved
+        #   c. some characters such as '?' and '+' have special meanings in regular epressions
+                if you wish to use the characters of teh above itself, must precede with a '\'
+
+Testing for matches
+    console.log(/waldo/.test('where is thou waldo'))
+    //-> true
+
+    a regular expression consisting of only nonspecial characters simply represents that sequence of 
+    characters. 
+    so if the regular expression we are testing appears anywhere in the string, test will return true 
+    (uuuhhhh, ddduuuuhh sherlock)
+   
+Sets of characters
+    finding whether a string contains a strings can be done with indexof
+    Regular expressions allow us to express more complicated patterns
+
+    say we want to find any number, enclosing a set of characters in square brackets, will do the trick
+        console.log(/[0123456789]/.test('d0es th15 5tr1ng have any numb3rs?'))
+        // -> true
+        console.log(/[0-9]/.test('d0es th15 5tr1ng have any numb3rs?'))
+        // -> true
+
+        //note: within square brackets [], a hyphen -, between two characters indicate the a range of 
+        characters determined by unicode numbers.
+
+        built-in shortcuts for common character groups
+            \d any digit character
+                [0-9]
+            \w an alphanumeric character (123abcABC_) for whatever reason _ is included 
+                [a-zA-Z0-9_]
+            \s any whitespace character (space, tab, newline, etc)
+                [\n\t\s\b dash a whole bunch a shit]
+            \D NOT a digit
+                [^0-9]
+            \W NOT alphanumeric
+                [^a-zA-Z0-9_]
+            \S NOT whitespace
+                [^\n\t\s\b dash a whole bunch a shit]
+            . Any character EXCEPT newline
+                [fuking goes on and on except \n]
+
+        example
+            let dateTimeFormat = /\d\d-\d\d-\d\d\d\d \d\d:\d\d/;
+            console.log(dateTimeFormat.test("01-30-2003 15:20"));
+            // → true
+            console.log(dateTimeFormat.test("30-jan-2003 15:20"));
+            // → false
+
+        note: within square brackets, . and + loose their special meanings
+
+        to invert a set of characters, use a caret after the opening bracket
+            let notBinary = /[^01]/;
+            console.log(notBinary.test("1100100010100110"));
+            // → false
+            console.log(notBinary.test("1100100010200110"));
+            // → true
+
+        repeating parts of a pattern
+            when you put a plus + after, it indicates the element may be repeated 
+                console.log(/'\d+'/.test("'123'"));
+                // → true
+                console.log(/'\d+'/.test("''"));
+                // → false
+
+        when you put a star * after, it indicates the element may be repeated or nothing else  
+            console.log(/'\d*'/.test("'123'"));
+            // → true
+            console.log(/'\d*'/.test("''"));
+            // → true
+            console.log(/'\d*'/.test("'!@#'"));
+            // → false
+
+        when you put a question mark ? after, it indicates the pattern is optional
+            let neighbor = /neighbou?r/;
+            console.log(neighbor.test("neighbour"));
+            // → true
+            console.log(neighbor.test("neighbor"));
+            // → true
+
+        to indicate that a pattern should occur a precise number of times, 
+        use brace {} and can specify a range as such {1,9}, {5,} 5 or more
+            // this version allows for both double and single characters for months, days and hours
+            let dateTime = /\d{1,2}-\d{1,2}-\d{4} \d{1,2}:\d{2}/;
+            console.log(dateTime.test("1-30-2003 8:45"));
+            // → true
+            // note, for example when doing {n,5} or {5}, it will still consider the first 5 characters of a string
+            just test it on regexr.com
+
+        1. SUBEXPRESSION GROUPING, to use an operator like * or + on more than one element at a time, use parenthesis, 
+        2. puting an i after the closing /, makes the expression case insensitive
+            let cartoonCrying = /boo+(hoo+)+/i;
+            console.log(cartoonCrying.test("Bbooooohodasooasdohbsdfoohooo"));
+            // → true
+
+        matches and groups
+            RegExps also have an exec method that will return null or an object with information(properties) 
+            about the matches
+                let match = /\d+/.exec("one two 100");
+                console.log(match);
+                // → ["100"]
+                console.log(match.index);
+                // → 8
+
+            DIS IS FUKING WEIRD
+                so strings have a match method, the the RegExps AS THE ARGUMENT
+                    console.log("one two 100".match(/\d+/));
+                    // → ["100"]
+
+            When the regular expression contains subexpressions grouped with parentheses, 
+            the text that matched those groups will also show up in the array. The whole 
+            match is always the first element. The next element is the part matched by the 
+            first group (the one whose opening parenthesis comes first in the expression), 
+            then the second group, and so on.
+                let quotedText = /'([^']*)'/;
+                console.log(quotedText.exec("she said 'hello'"));
+                // → ["'hello'", "hello"]
+
+            When a group does not end up being matched at all (for example, when followed by
+            a question mark), its position in the output array will hold undefined.
+                console.log(/bad(ly)?/.exec("bad"));
+                // → ["bad", undefined] 
+
+            Similarly, when a group is matched multiple times, only the last match ends up in the array.
+                console.log(/(\d)+/.exec("123"));
+                // → ["123", "3"]
+
+The Data Class
+    represents dates or rather points in time
+        creating a data object
+            // no argument, will give the current time
+            console.log(new Date())
+            // → Mon Nov 13 2017 16:19:11 GMT+0100 (CET)
+
+            console.log(new Date(2009, 11, 9));
+            // → Wed Dec 09 2009 00:00:00 GMT+0100 (CET)
+            console.log(new Date(2009, 11, 9, 12, 59, 59, 999));
+            // → Wed Dec 09 2009 12:59:59 GMT+0100 (CET)
+
+        NOTE: WEIRD SHIT, in JS month starts with 0, days and start at 1
+        for the Date constructor, the last 4 arguments are optional, default 0
+
+        methods
+            getTime()
+                returns the number of seconds after or before 1970 (unix time)
+
+                NOTE: if you give the Date constructor only one argument, it will be treated as unix time
+
+                console.log(new Date(2013, 11, 19).getTime());
+                // → 1387407600000
+                console.log(new Date(1387407600000));
+                // → Thu Dec 19 2013 00:00:00 GMT+0100 (CET)
+
+
+            // to get current unix time
+            new Date().getTime()
+            //or
+            Date.now
+
+            getFullYear()
+            getMonth()
+            getDate()
+            getHours()
+            getMinutes()
+            getSeconds()
+            
+            // USELESS MOSTLY
+            getYear()   
+                gets you the year minus 1900
+                mostly useless
+
+creating a data object from a string
+    function getDate(string) {
+        let formattedString = /(\d{1,2})-(\d{1,2})-(\d{4})/.exec(string)
+        
+        console.log(formattedString)
+        // ->["30-1-2009", "30", "1", "2009"]
+
+        // as we don't care about the first element of formattedString, the _ binding is just for us to ignore
+        let [_, day, month, year] = formattedString
+        return new Date(year, month - 1, day);
+    }
+
+    console.log(getDate("30-1-2009"))
+    // -> Fri Jan 30 2009 00:00:00 GMT+0800 (Singapore Standard Time)
+
+Word and String Boundaries
+    ^ marks the start of the input string
+    $ marks the end
+
+    example:
+        /^\d+$/ 
+            // matches a string consisting of one or more digits
+
+        /^!/
+            // matches any string that starts with an exclamation mark
+
+        /x^/
+            // does not match anything (there can't be an x before the start lol)
+
+    \b
+        is a word boundary,
+            can be the start or end of string
+            can be the start or end of a word character (as in \w)
+
+        console.log(/cat/.test("concatenate"));
+        // → true
+        console.log(/\bcat\b/.test("concatenate"));
+        // → false
+
+        NOTE: the boundary marker doesn't match an actual character, it just enforces that the regular expression matches
+        only when a certain condition holds at the place where it appears in the pattern
+
+Choice Patterns
+    example:
+        // the pipe | denotes choices
+        // test for a nuimber followed by a certain set of words
+
+        let animalCount = /\b\d+ (pig|cow|chicken)s?\b/;
+        console.log(animalCount.test("15 pigs"));
+        // → true
+        console.log(animalCount.test("15 pigchickens"));
+        // → false
+
+For more notes on backtracking refer to the website
+    just note 
+        that as the program enters a branch and realizes it's invalid, it will back track
+        and enter another branch. 
+        
+        backtracking can occur as while when the an earlier part of the RegExp is valid but hasnt validated another part
+        of the same RegExp, so it backtracks from the end of the string to the beginning. ctrl + f 'backtracking also happens
+        fo repetition' for more.
+
+        Your RegExp should be as efficient as possible to reduce backtracking. 
+        Bad RegExp code can cause exponential backtracking.
+
+Replace Method
+    string values have a replace method
+        console.log("papa".replace("p", "m"));
+        // → mapa
+
+    the first argument can be a RegExp
+        console.log("Borobudur".replace(/[ou]/, "a"));
+        // → Barobudur
+
+        //can use a g flag for global
+        console.log("Borobudur".replace(/[ou]/g, "a"));
+        // → Barabadar
+
+    The real power of using RegExp with replace comes from the fact we can replace matched groups
+
+        // an initial string with a <lastname>, <firstname> format, being turned into a <firstname> <lastname> format
+        console.log(
+            "Liskov, Barbara\nMcCarthy, John\nWadler, Philip"
+                .replace(/(\w+), (\w+)/g, "$2 $1"));
+            // → Barbara Liskov
+            //   John McCarthy
+            //   Philip Wadler
+
+        // the $<insert number> refers to a parenthesized group in the pattern. up to $9. 
+        // The whole match can be refered to with $&
+
+        functions can also be used as the second argument of replace()
+            let s = 'the cia and fbi'
+            console.log(s.replace(/\b(cia|fbi)\b/g, 
+            str => str.toUpperCase()));
+            // → the CIA and FBI
+
+
+        another cool example
+            let stock = '1 lemon, 2 cabbages, and 101 eggs';
+
+            function minusOne(match, amount, unit){
+                amount--
+                if(amount == 1){
+                    unit = unit.replace('s', '') 
+                } else if(amount == 0){
+                    amount = 'no' 
+                }	
+                return amount + ' ' + unit;
+            }
+
+            console.log(stock.replace(/(\d+) (\w+)/g, minusOne))
+            // the match parameter will contain the full string but with a newline after every match
+            // if amount 1, remove s
+            // if amount 0, replace with no
+
+GREED 🤑🤡
+an example of code to get rid of comments in a javascript code, WITH A TWIST 🤯
+    //note, this code might have problems if there is more than one block comment in a single line
+
+    code.replace(/\/{2}.*|\/\*[^]*\*\//g)
+    \/{2}.* matches any two / followed by zero or more characters except for newlines
+    [^] instead of . because it's multiline and . doesnt match multilines
+
+    so the problem with [^]*
+        /* ninja */ tree /* john cena */
+        [^]* will go throught the entire string above🤑, including */ and /* surround tree🤡. than it will back track to match the last */🤡
+
+        hence we sayeth reptition operators are greedy
+
+        we can make them nongreedy with ? matching only when the remainding pattern does not fit the smaller match 🤠
+            /\/{2}.*|\/\*[^]*?\*\//g
+
+Dynamically created RegExp Objects
+    in this example we take a text with a name in it and surround it with '_', the name derives from user input
+    let name = prompt()
+
+    let text = 'Who is the user, Aragorn, Boromir, Gimli or Orlando Bloom'
+
+    // rmb to escape the \ with \, rmb the name needs to be enclosed in parenthesis so that 
+    // it can be recognised as a parenthesized group therefore we can use $<insert number>
+    let nameRegExp = new RegExp("\\b(" + name + ")\\b", "gi")
+
+    console.log(text.replace(nameRegExp, '_$1_'))
+
+    //what if the username is something stupid like dea+hl[]rd?
+    // than we can ensure the raw input name has escapes
+    let processedName = name.replace(/[\\[.+*?(){|^$]/g, "\\$&");
+    let nameRegExp = new RegExp("\\b(" + processedName + ")\\b", "gi")
+
+search()
+    like indexOf but expects a regular expression, unfortunately does not have a second parameter for offsets
+
+The LastIndex Property
+    the exec method doesn't provide a convenient way to start searching from a specified position either.
+    It does however provide and inconvenient way
+    
+    can ctrl + f lastIndex 🤢🤮
+        SOOOoooo uuuhhh
+            lastIndex property can be reassigned
+            lastIndex updates to the index after a match
+
+the difference between global and sticky ?????
+
+note:
+    console.log('banana'.match(/an/g));
+    // -> ['an','an']
+    console.log(/an/g.exe('banana'))'
+    // -> ['an']
+
+so be careful with global RegExps
+    typically you'll use them only in
+            calls to replace
+            want to explicitly use lastIndex
+
+looping over matches
+    let string = 'this string has 3 numbers, 36 and 60...';
+    let regExpNumber = /\b\d+\b/g;
+    while (match = regExpNumber.exec(string)){
+        console.log(`Found ${match[0]} at ${match.index}`);
+    }
+    // -> Found 3 at 16
+    // -> Found 36 at 27
+    // -> Found 60 at 34
+
+    /* can use an assignment as a condition😯, perform the match 
+    at the start of each iteration, saving the binding. The loop 
+    ends when there are no more matches */
+
+    // in case you're blured out, here's one without a loop
+        let string = 'this string has 3 numbers, 36 and 60...';
+        let regExpNumber = /\b\d+\b/g;
+        match = regExpNumber.exec(string)
+        console.log(`Found ${match[0]} at ${match.index}`);
+        match = regExpNumber.exec(string)
+        console.log(`Found ${match[0]} at ${match.index}`);
+        match = regExpNumber.exec(string)
+        console.log(`Found ${match[0]} at ${match.index}`);
+
+some notes on Config or ini(initialization) files
+    -blank lines and lines starting with semicolons ; are ignored
+    -; this would be a comment in an ini file
+    -lines wrapped in [ and ] start a new section
+    -lines containing an alphanumerical idetifier followed by an = character 
+    adds a setting to the current section. sought of like a key value pair
+    -anything else is invalid
+
+For an example for an INI config file parses see INIParses.js
+
+International Characters
+    JS initial implementation was simplistic and it has been set in stone since. leading to 
+    a very meh RegExp treatment of non english characters
+    so \w includes
+        0-9, a-z, A-Z and for whatever reason _
+
+        things like é and β will not match \w and will match \W
+
+    so \s will match all characters that unicode considers whitespace including
+        nonbreaking space
+        and the mongolian vowel separator
+
+    also regular expressions work on code units. not actual characters, so 
+    characters composed of two code units behave strangely
+        console.log(/🍎{3}/.test("🍎🍎🍎"));
+        // -> false
+        console.log(/<.>/.test("<🌻>")):
+        // -> false
+        console.log(/<.>/u.test("<🌻>")):
+        // -> true
+
+        must add the u flag to treat characters that use two code units properly
+
+    As of 2018, this was only recently standardized and not widely supported.
+        only on regExp with unicode flag, you can use \p to match all characters of the unicode standard
+            console.log(/\p{Script=Greek}/u.test("α"));
+            // → true
+            console.log(/\p{Script=Arabic}/u.test("α"));
+            // → false
+            console.log(/\p{Alphabetic}/u.test("α"));
+            // → true
+            console.log(/\p{Alphabetic}/u.test("!"));
+            // → false
+
+            // the notation is \p{Property=Value}
+            // or if the property name is left off as in \p{name}, the name is assumed 
+            to be either a binary property such as Alphabetic or cateogry such as number
+
+            can refer to EJS 09 summary for regExp reference table https://eloquentjavascript.net/09_regexp.html#summary_regexp
+                regExp methods
+                    test
+                    exec
+                        returns an array of matched grousp
+                        has an index property
+
+                strings methods that have allow regExp arguments
+                    match
+                    search
+                        return only that starting position of the match
+                    replace
+
+                regExp flags
+                    i, insensitive case
+                    g, global
+                    y, sticky, will not search ahead and skip part of the string when looking for a match
+                    u, unicode, useful for characters that take up tweo code units

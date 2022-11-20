@@ -18,7 +18,7 @@ Encapsulation
 	though the distinction is not built in javascript. programmers utilise this ideas in JS.
 	property names with _ indicate that those are private
 	
-	separating interface from implementation is a great. usually refered to as encapsulation
+	separating interface from implementation is a great idea. usually refered to as encapsulation
 	
 Methods
 	a method usually does something with the object it was called upon.
@@ -171,10 +171,10 @@ Overriding Derived Properties
 	// → 1,2
 
 Maps
-	not be mistake with the array method
+	not be mistaken with the array method
 	
 	A map(noun) is a data structure that associates values(keys) with other values.
-	example
+	an example of the map concept with an object
 	
 	let ages = {
 	  Boris: 39,
@@ -216,6 +216,11 @@ Maps
 	
 	console.log(ages.get("Boris"))
 	console.log(ages.has("Liang"))
+
+    to summarize, the class map is good for 
+        using non strings such as objects as keys
+        not having to worry about inheriting weird stuff from Object prototype
+
 
 note: you can use 
 	property in object //checks properties in object and prototype
