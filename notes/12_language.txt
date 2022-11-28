@@ -1,0 +1,25 @@
+"The evaluator, which determines the meaning of expressions in a programming language, is just another program."
+
+-Hal Abelson and Gerald Sussman, Structure and Interpretation of Computer Programs
+
+egg
+    The most visible part of a programming language is its syntax or notation. A parser reads the text and produces a data 
+    structure that reflects the structure of the program.
+
+    everything in egg is an expression
+        bindings
+        numbers
+        strings
+        applications
+            will be for our function calls and also for constructs like if or while
+
+    to keep things simple we wont support string escapes
+
+    application notation for egg, will be as seen here
+        https://eloquentjavascript.net/12_language.html#p_N7llkiWaN/
+
+    type value represent literal strings or numbers
+    type word for identifiers
+    type apply for applications
+
+Resume at some point

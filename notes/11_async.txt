@@ -1,0 +1,187 @@
+"who can wait quietly while the mud settles?
+who can remain still untill the moment of action?"
+- Laozi, Tao Te Ching
+
+So far the programs we have seen, will occupy the processor until the program ends.
+
+but many programs may interact with things outside the processor
+    communicating over a network
+    requesting data from a ssd or worse hard disk
+
+it would be a shame to let the processor idle.
+    when it could be doing some other work.
+        BTW the OS will let the processor handle other programs.
+
+        but that won't help our own program progress
+
+Asynchronicity
+    Synchronous, one at a time
+
+    Asynchronous, multiple things at a time. 
+        when you start an action, your program continues to run.
+        when the action finishes, the program is informed and gets to access the results
+
+    example scenario: fetch two resources from the network and combine the results
+        Synchronous
+            one after another, the time taken will be at least the sum of the two responses
+
+        Synchronous two threads of control
+            this system will start additional threads of control.
+            a thread is another running program whose execution may interleaved with other programs by the OS.
+            with multiple processors, likely comes multiple threads.
+
+            so a second thread could start to handle the other request, once both results comeback, they
+            can resynchronize
+
+        Asynchronous
+            since a network action is happening outside our computer, our processor can still continue running 
+            our program
+
+    REFER to ref 2 for a model of the above
+            
+        
+    
+    another way to describe the difference.
+        Synchronous
+            waiting for actions to finish is implicit
+        Asynchronous
+            waiting for actions to finish is explicit, under our control
+
+        Asynchronicity cuts both ways. It makes expressing problems that do not fit a straight-line model easier.
+        but it can make expressing programs that do follow a straight line more awkward.
+
+    Both Browsers and Node.js make operations that might take a while Asynchronous, since relying on threads is 
+    notoriously hard (understanding a program is much harder when it's doing multiple things at once). 
+
+Crow Tech
+    Certain Crow cultures have the ability to construct computing devices. A species closely related to termites
+    has developed a symbitoic relationship with crows. The birds provide them with food, and they operate their 
+    complex colonies, with the help of living creatures inside them, perform computations.
+
+    The colonies are usually located in big old nests. The birds and insects work together to build a network of 
+    dirt, in which the insects live and work.
+
+    read the rest on the website...
+
+    Crow Tech can run JS, for the rest of the chapter Crow Tech and their computer(bigOak) will be our analogy
+
+Approaches to Asynchronous programming
+    Callbacks
+        make functions that perform a slow action, take an extra argument, a callback function. When the action 
+        finishes, the callback function is called with the result.
+
+        an example is setTimout
+            setTimeout(() => console.log('tick'), 500);
+
+            // useful for animations or checking the duration of an action
+
+        performing multiple Async actions in a row with callbacks means you have to keep passing new functions to
+        handle the continuation of the computations.
+
+        Crows nest computers have a long-term storage bulb, where data is etched in twigs to be retrieved later.
+        Etching or finding data, takes a while, so the interface to long-term storage is async and uses callbacks.
+
+        storage bulbs store JSON-encodable data under different names. Example 'food caches' may hold an array
+        of names that point at other pieces of data.
+            import {bigOak} from "./crow-tech";
+
+            bigOak.findStorage('food caches', caches => {
+                let firstCache = caches[0];
+                bigOak.readStorage(firstCache, info => {
+                    console.log(info)
+                })
+            })
+            // this style is okay, but once it get's more complicated, such as multiple actions simultaneously, 
+            // you gonna end up with nested callback🤮
+
+        read the rest on the website...
+            thinks to note
+                communication via request-response pairs
+                when a request is sent, a respone is sent with confirming receipt and possibly including a reply
+                
+                each message is tagged with a type
+                we can define handlers for each type
+                and dependant on type, the handler can produce a response
+
+                crow request type function
+                    // first arg, target???. 2nd arg, type, 3rd arg, content, 4th arg, a function to call when response is received
+                    bigOak.send("Grey Tree", "noteType", "Let's caw loudly at 7pm", () => console.log("note delivered")) 
+
+                crow response type function, (all crow nest should have a uniformed request and response functions, so packages would be good)
+                    import {defineRequestType} from "./crow-tech";
+
+                    defineRequestType("noteType", (nest, content, source, done) => {
+                        // take it that nest have a name property
+                        console.log(`${nest.name} received note: ${content}`);
+                        done();
+                    })
+                    
+                    //in this example, defineRequestType defines a new request type. this examples adds support for note types.
+
+
+    Promises
+        Abstract concepts are best represented by values. So for Async systems, rather than arranging for a function
+        to be called at some point in the future. Simplify it by having an object that represents this future event
+
+        This is what the standard class of Promise is. continue reading on website...
+
+        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises
+            rmb the functions arguments within .then must return result(s)
+                if the previous handler starts a promise and doesn't return it, there's no way to track it'scenario
+                settlement anymore, and the promise is said to be 'floating
+                ...
+Failure
+    regular JS computations can fail by throwing exceptions.
+    Async computations need something like that. A network request may fail, or some code part of the
+    Async computation may throw an exception.
+
+    one problem with the callback style of Async programming, is the difficulty to report failures to the 
+    callbacks
+
+    read the rest on website...
+
+    so when an exception in a handler occurs, it causes a rejection, the exception value used as the reason
+    for rejections.🤔and when a handler returns a promise that is rejected, thatt rejection flows into The
+    next promise. There's a Promise.reject function that creates a new, immediately rejected promise.
+
+    to explicitly handle rejections, promises have a catch method that registers a handler to be called when the
+    promise is rejected.
+
+    HHMMM🤔 does the term handler refer to .then, .catch and the such? or the functions within in them? is there a difference?
+    
+    🤯😤😑🤨🤬🥸🤡 so there's a shorthand, then has a second argument for rejection handler.
+
+Networks are Hard
+    ...
+    when a failure in transmission over a network occurs, just retry arranging
+
+    so the request automatically retries a few times before giving up
+
+    request returns a promise
+
+    even if a request is successfuly delivered, the response may indicte failure if
+        the request uses a type that hasn't been defined
+        the handlers throws an error
+    so,
+    our send and defineRequestType shall follow the convention, where the 
+        arguments to callbacks
+            1st if any, failure reason
+            2nd, the actualy result
+
+https://javascript.info/callbacks
+    “error-first callback” style.
+
+    The convention is:
+
+    The first argument of the callback is reserved for an error if it occurs. Then callback(err) is called.
+    The second argument (and the next ones if needed) are for the successful result. Then callback(null, result1, result2…) is called.
+    So the single callback function is used both for reporting errors and passing back results.
+
+https://javascript.info/promise-basics
+
+network flooding
+    ...
+    https://eloquentjavascript.net/11_async.html#h_pi4+kiBmAy
+message routing
+    ...
+    https://eloquentjavascript.net/11_async.html#h_qb23G8H5P9

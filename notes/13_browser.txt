@@ -1,0 +1,86 @@
+Networks and the Internet
+    communication between computers are basically just bits, the meaning of the bits is dependant on the encoding
+    mechanism.
+
+    Network protocals
+        describe a style of communication over a network. there are protocols for sending and fetching emails, 
+        sharing files and even controlling computers infected with malicious software
+        e.g 
+            http
+                a protocol for retrieving named resources (chunks of info, such as web pages or pictures).
+                specify the side making the request start with a line like this
+                    GET /index.html HTTP/1.1
+
+            TCP
+                a protocol that ensures the transfer bits to the correct destination in the correct order.
+                Almost all internet-connected devices 'speak it'. most communication on the internet is
+                built on top of it.
+
+                works as follows:
+                    one computer is waiting or listening for other computers to talk to it.
+                    for one machine to listen for different kinds of communications at the same time.
+                    each listener has a port number. 
+                    most protocols specify a default port. e.g
+                        emails using the SMTP protocol, the machine uses port 25
+
+                    the other machine can establish a connection by connecting to the target machine using the 
+                    correct port number.
+
+                    the listening machine is called the server.
+                    the connecting machine is the client
+
+                    once the connection is established. it acts as a two-way pipe for information to flow.
+                    you can call TCP an abstraction of the network.
+
+The web
+    the world wide web (not to be confused with the internet)
+        a set of protocols and formats that allow us to visit web pages with a browser.
+        the web, refers to the interconnection via links between pages, hence web
+
+    to become part of the web, connect a machine to the internet and have it listen on port 80 
+
+    each document on the web named by the Uniform Resource Locator
+          http://eloquentjavascript.net/13_browser.html
+         |      |                      |               |
+         protocol       server               path
+
+    machines connected to the internet get an IP address, you can register a domain name for a 
+    specific address or set of addresses.
+
+    so when you type a url to the address bar
+        1. the browser tries to find what address the domain name refers to
+        2. using the HTTP to establish a connection with the server
+        3. ask for the resource specified by the path
+        4. if all goes well, sends back the document for the browser to display
+
+HTML
+    if the tags don't enclose anything they dont need a closing tags, EXCEPT THE SCRIPT TAG e.g.
+        <input>
+        <meta>
+
+        special meaning characters
+            < &gt;
+            > &lt;
+            & &amp;
+            " &quot;
+
+    can load modules
+        <script type="module">
+
+    when using various attributes that can contain JS such as onclick you can use &quot; as oppose to a differing quot type
+        <button onclick="alert(;quot&boom;quot&);">
+
+In the Sandbox
+    running programs from the internet is dangerous, browsing web pages on the other hand is significantly less so.
+    So even if you go to a untrustworthy site, JS is usually to limited by the browser(can't look at files on your 
+    computer, can't modify anything not related to the web page it was embedded in)
+
+    every now and then, someone coems up with a new way to circumvent limitations of a browser, developers respond by
+    fixing the hole. Preferably before it is exploited.
+
+Compatibility and Browser wars
+    through the rise and fall in popularity of various browsers throughout history. The top dog felt compelled to 
+    unilaterally create new features for the Web. Since users tend to use the most popular browser, websites
+    would start using those features - though the features may not necessarily be compatible on other browsers.
+
+    the dark age, where developers had to deal with three incompatible platforms
