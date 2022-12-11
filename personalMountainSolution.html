@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+	</head>
+	<body>
+		<h1>Mountains</h1>
+
+		<div id="mountains"></div>
+
+		<style>
+			table, th, td{
+			border: 1px solid black;
+			border-collapse: collapse;
+		</style>
+
+		<script>
+			const MOUNTAINS = [
+				{ name: "Kilimanjaro", height: 5895, place: "Tanzania" },
+				{ name: "Everest", height: 8848.5, place: "Nepal" },
+				{ name: "Mount Fuji", height: 3776, place: "Japan" },
+				{ name: "Vaalserberg", height: 323.4, place: "Netherlands" },
+				{ name: "Denali", height: 6168, place: "United States" },
+				{ name: "Popocatepetl", height: 5465, place: "Mexico" },
+				{ name: "Mont Blanc", height: 4808, place: "Italy/France" },
+			];
+
+			// Your code here
+			// th derive from first object key names
+			// numbers values right align
+			let mountainTable = createElement("table");
+			document.querySelector("div").appendChild(mountainTable);
+			let headers;
+			if (MOUNTAINS[0]) {
+				headers = Object.keys(MOUNTAINS[0]);
+				headers.forEach((header) => {
+					mountainTable.appendChild(createElement("th", header));
+				});
+			}
+
+			// type can be text
+			function createElement(type, ...children) {
+				let node = document.createElement(type);
+				children.forEach((child) => {
+					if (typeof child == "string" || typeof child == "number") {
+						node.appendChild(document.createTextNode(child));
+					} else {
+						node.appendChild(child);
+					}
+				});
+				return node;
+			}
+
+			MOUNTAINS.forEach((mountain) => {
+				mountainTable.appendChild(
+					createElement(
+						"tr",
+						...headers.map((header) => createElement("td", mountain[header]))
+					)
+				);
+			});
+
+			for (let td of document.querySelectorAll("td")) {
+				if (/^\d+$/.test(td.innerHTML)) td.style.textAlign = "right";
+			}
+		</script>
+	</body>
+</html>

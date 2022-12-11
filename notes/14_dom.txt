@@ -1,0 +1,402 @@
+HTML is parsed by the browser into a data structure known as the document object model.
+The data strucutre is live, any modifications too it is reflected live on screen.
+
+Document structure
+    the global binding 'document', gives us access to the data structure
+
+    document properties
+        .documentElement
+            console.log(document.documentElement) // pretty the entire page
+
+Trees
+    - have a branching structure
+    - has no cycles (a node may not contain itself directly or indirectly)
+    - a single well defined root (document.documentElement)
+
+    tend to come up alot in computer science. In addition to representing recursive structures such as HTML documents.
+    They are often used to maintain sorted sets of data because elements can usually be found and or inserted more 
+    efficiently than a flat array.
+
+    trees can have different kind of nodes, like a real tree they may have branches, which have their own branches, or 
+    leaves with no children
+
+    the DOM can have 
+        - nodes for elements, which represent HTML tags, which may have their own children
+        - 'leaf' nodes such as pieces of text or comment nodes
+
+    each node object has a 'nodeType' property, which contains a code (number) that identifies it
+        Elements have code 1, also defined as the constant property node.ELMENENT_NODE 
+        Text nodes have code 3, node.TEXT_NODE 
+        comments have code 8, node.COMMENT_NODE
+
+
+The standard
+    the use of cryptic numeric codes is not very JS.
+    there are other parts of the DOM that is also feels cumbersome and alien
+    the DOM tries to be language neutral
+        the DOM wasn't just designed for JS, but for HTML and XML a data format with a HTML like syntax
+
+    general standards are good. but in this case, the advantage of cross-language consistency isn't compelling.
+    having an interface that is integrated with the language will save you more time.
+
+    an example of confusion. The 'childNodes' property holds an array-like object with length property and 
+    properties labeled with numbers to access the child nodes. But they're an instance of the 'NodeList' type 
+    NOT an 'array', so it doesn't have methods like 'slice' and 'map'
+
+    then there are issues that are simply poor design. like you can't create a new node with children and attributes,
+    instead you have to create it and then add the children and attributes one by one, use side effects.
+
+    However JS allows us to create our own abstractions, many libraries intended for browser programming come with
+    such tools.
+
+Moving through the tree
+    DOM nodes contain a wealth of links to other nearby nodes, refer to this diagram
+        https://eloquentjavascript.net/14_dom.html#p_KU+aLLXhA0
+        .parentNode
+
+        previousSibling
+        nextSibling
+
+        .childNodes
+        .childNodes[<nth child node>]
+        firstChild
+        lastChild
+
+        obviously the above properties may be null for some nodes
+            can use in conditional for loops and such💡
+
+        there is also the 'children' property, which is similar to childNodes but only contains
+        element children (type 1), and no other type of child nodes. Useful if you're not interested 
+        in text nodes
+
+        when dealing with nested data structures, recursive functions are often useful.
+        the following function scans a document for text nodes containing a give string and 
+        returns true when it has found one.
+            function talksAbout(node, string) {
+                if (node.nodeType == Node.ELEMENT_NODE) {
+                    for (let child of node.childNodes) {
+                    if (talksAbout(child, string)) {
+                        return true;
+                    }
+                    }
+                    return false;
+                } else if (node.nodeType == Node.TEXT_NODE) {
+                    return node.nodeValue.indexOf(string) > -1;
+                }
+                }
+
+            console.log(talksAbout(document.body, "book"));
+
+Finding Elements
+    navigating the relationship between parents, children and sibling is often useful.
+    but if we want to find a specific node in the document. It would be difficult and you
+    can't gurantee a precise and contant structure to the document (you may want to change it later).
+
+    another thing is text nodes are created even for the whitespaces between nodes
+        <body>
+            <script src="test.js"></script>
+            <h1>title</h1>
+            
+            <p> example 
+                poop
+                crap
+            </p>
+            <script>console.log(document.body.childNodes)</script>
+        </body>
+        /*
+            NodeList(8) [text, script, text, h1, text, p, text, script]
+            0: text
+            1: script
+            2: text
+            3: h1
+            4: text
+            5: p
+            6: text
+            7: script
+            8: text
+        */
+
+    .getElementsByTagName
+
+Changing the Document
+    Almost everything about the DOM can be changed. The shape of the document tree can be modified by changing
+    the relationship between the nodes.
+        .remove() //removes from current parent
+        .appendChild() // put at end of list of children
+        .insertBefore(<node>, <referenceNode>) 
+            // insert the 1st arg node right before the existing 2nd arg node
+            /*  note: the first arg can be an existing node, but if it already exist in the document it 
+            will be removed from the previous position*/
+                <p>1</p>
+                <p>2</p>
+                <p>3</p>
+                <script>
+                    let paragraphs = document.body.getElementsByTagName('p');
+                    document.insertBefore(paragraphs[2], paragraphs[1]);  	
+                </script>
+Creating nodes
+    <p>The <img src="img/cat.png" alt="Cat"> in the
+    <img src="img/hat.png" alt="Hat">.</p>
+
+    <p><button onclick="replaceImages()">Replace</button></p>
+
+    <script>
+    function replaceImages() {
+        let images = document.body.getElementsByTagName("img");
+        for (let i = images.length - 1; i >= 0; i--) {
+        let image = images[i];
+        // check if image has an alt attribute
+        if (image.alt) {
+            let text = document.createTextNode(image.alt);
+            image.parentNode.replaceChild(text, image);
+        }
+        }
+    }
+    </script>
+    note: can createTextNodes with no tags
+
+    // it is necessary to go through the list backwards, as images.length would update live.
+
+    note: can convert a collection into an array with Array.from
+
+    a good way to abstract creating elements
+        <blockquote id="quote">
+        No book can ever be finished. While working on it we learn
+        just enough to find it immature the moment we turn away
+        from it.
+        </blockquote>
+
+        <script>
+        function elt(type, ...children) {
+            let node = document.createElement(type);
+            for (let child of children) {
+            if (typeof child == "string") node.appendChild(document.createTextNode(child));
+            else node.appendChild(child);    	
+            }
+            return node;
+        }
+
+        document.getElementById("quote").appendChild(
+            elt("footer", "—",
+                elt("strong", "Karl Popper"),
+                ", preface to the second edition of ",
+                elt("em", "The Open Society and Its Enemies"),
+                ", 1950"));
+        </script>
+
+        myown
+              function createElement(type, ...children){
+                    let node = document.createElement(type);
+                    children.forEach(child => {
+                        if(typeof child == "string" || typeof child == "number"){
+                            node.appendChild(document.createTextNode(child));
+                        } else {
+                            node.appendChild(child);
+                        }
+                    })
+                    return node
+                }
+
+Attributes
+    most html element attributes can ve accessed via JS using the name of the attribute itself 
+        e.g
+            document.<element>.<attribute name>
+            document.getElementById('1').href
+
+    HTML also allows you to set ANY attribute you want including your own. However made up attributes
+    can't be accessed as a property on the elements node. instead you'll have to use getAttribute and 
+    setAttribute methods.
+        <p data-myAttribute1="showme">you're pretty</p>
+        <p data-myAttribute2="hideme">ugly</p>
+
+        <script>
+            hiddenElements = document.body.getElementsByTagName('p')
+            for (let elm of Array.from(hiddenElements)){
+                if (elm.getAttribute("data-myAttribute2") == "secret"){
+                    elm.remove();
+                }
+            }
+        </script>
+
+    made up attributes should be prefixed with data to avoid confusion and 
+
+    class attribute
+        some older JS implementations can't handle property names matching keywords, 
+        as the HTML class attribute also happens to be keyword in JS. You can access
+        the property via <element>.className or just using the getAttribute and setAttribute
+        methods.
+
+Layout
+    display
+        block
+        inline
+        none
+        list...
+        table..
+        flex
+        inherit
+        ...
+
+    the offsetWidth and offsetHeight returns pixel width and height respectively.
+    note however that with modern displays having tiny ass pixels, this may not always be the case.
+
+    simarly clientWidth and clientHeight gives you the size of space inside the element, ingoring border width.
+
+    can find positions of elements on screen with
+        .getBoundingClientRect()
+            returns an object with top, botton, left and right properties 
+            relative to the the top left of the SCREEN
+
+            if you want them relative to the whole document, you'll have to include the current scroll position
+            with pageXOffset and pageYOffset
+
+    browsers
+        when you change the browser size, they will wait as long as they can to change the layout of the document
+
+        a program that repeatedly alternates between reading DOM layout information and
+        changing the DOM forces a lot of layout computations to happen and will consequently run
+        very slowly
+
+        below is two example functions, one that constantly reads the layout and another with a clever trick
+            <span id='1'></span>
+            <br>
+            <span id='2'></span>
+
+            <script>
+            function timer(func,...args){
+                let start = Date.now();
+                func(...args)
+                console.log(func.name, ": ", Date.now()-start)
+            }
+
+            function dumb(width){
+                let p = document.getElementById('1')
+                while (p.offsetWidth < width){
+                    p.appendChild(document.createTextNode('x'))
+                }
+            }
+
+            function clever(width){
+                let p = document.getElementById('2')
+                p.appendChild(document.createTextNode('xxxxx'))
+                let repeats = (Math.ceil(2000/(p.offsetWidth/5)))
+                p.innerHTML = 'x'.repeat(repeats);
+            }
+                
+            timer(dumb, 2000)
+            // -> ~40
+            timer(clever, 2000)
+            // -> 0
+            </script>
+
+    style properties are just css style properties but camcelcase (font-family > fontFamily)
+
+CSS
+    precedence style rules from inline style, style tag, external stylesheet, script is determined
+    by which rule is most recently read
+
+    can give an element multiple classes 
+        <p id="1" class="class1 class2"></p>
+        <style>
+            /* the following will only work when all selectors are valid */
+            p#id1.class1.class2
+        </style>
+
+    https://www.w3schools.com/css/css_combinators.asp
+
+    precedence will also favor specificity
+        <p>
+            stuff
+        </p>
+
+        <div>
+            <p>
+                poop
+            </p>
+        </div>
+
+        <style>
+            /* despite not being as recent, the selector is more specific to poop */
+            div p{
+                color: brown; 
+            }
+            
+            p{
+                color:yellow;
+            }  
+        </style>
+
+Query selector capabilities 
+    able to make use of all the selector such as .class1 #id1 p h1 > +
+
+    note: 
+        getElementById and querySelector both return the same thing, an element 
+        but getElementsByClassName returns a live HTML collection, whereas querySelectorAll returns a static (not live) node list
+            woah dafug is not live suppose to mean??
+
+positioning and animating
+    note: 
+        cosine is associated with x axis
+        sin is associated with y axis
+
+    Browsers do not update their display or allow interaction with the page while a JS program is running.
+    requestAnimationFrame(<callback method>), 
+        -let's the browser know we're done for now, and allows the browser to do it's thing. 
+        -when the browser is active, schedules updates roughly 60 per second
+        -the callback method will be passed DOMHighResTimeStamp, which indicates the current time
+
+    example
+        <body>
+        <div id="ball"></div>
+        </body>
+        <style>
+            #ball{
+                position: absolute;
+                background-color:grey;
+                width:10px;
+                height:10px;
+            }
+        </style>
+        <script>
+            let blue = document.getElementById('ball')
+            let angle = Math.PI /2
+            // requestAnimationFrame is not necessarily steady(may stutter if CPU is busy)
+            // therefore we use time to determine the animation, note other time methods can be used, but since requestAnimationFrame 
+            // provides the DOMHighResTimeStamp, why not
+            function animate(time, lastTime){
+                if (lastTime != null){
+                    // the angle determines the position, and the angle is determined by the time
+                    angle += (time-lastTime) * 0.01;
+                }
+                blue.style.top = Math.sin(angle)*10 +30+ "px";
+                blue.style.left = Math.cos(angle)*10 +30 +"px";
+                // just seems like a good trick to allow you to pass the time argument
+                //  so the anoymous arrow function has the newTime parameter which will be passed DOMHighResTimeStamp as mentioned earlier
+                requestAnimationFrame(newTime => animate(newTime, time));
+            }
+            requestAnimationFrame(animate);
+    </script>
+    
+    for your understanding
+        console.log(`time: ${time}, lastTime: ${lastTime}, diff: ${time-lastTime}`)
+        time: 280.78, lastTime: undefined, diff: NaN
+        time: 294.555, lastTime: 280.78, diff: 13.775000000000034
+        time: 301.498, lastTime: 294.555, diff: 6.942999999999984
+        time: 308.424, lastTime: 301.498, diff: 6.925999999999988
+        time: 315.373, lastTime: 308.424, diff: 6.949000000000012
+        time: 322.317, lastTime: 315.373, diff: 6.944000000000017
+        time: 336.205, lastTime: 322.317, diff: 13.887999999999977
+        time: 412.57, lastTime: 336.205, diff: 76.36500000000001
+        time: 426.442, lastTime: 412.57, diff: 13.872000000000014
+        time: 433.382, lastTime: 426.442, diff: 6.939999999999998
+        time: 440.351, lastTime: 433.382, diff: 6.968999999999994
+        time: 447.294, lastTime: 440.351, diff: 6.942999999999984
+        time: 454.24, lastTime: 447.294, diff: 6.946000000000026
+        time: 461.185, lastTime: 454.24, diff: 6.944999999999993
+        time: 468.129, lastTime: 461.185, diff: 6.944000000000017
+        time: 475.073, lastTime: 468.129, diff: 6.94399999999996
+        time: 488.957, lastTime: 475.073, diff: 13.884000000000015
+        time: 495.903, lastTime: 488.957, diff: 6.946000000000026
+        time: 502.847, lastTime: 495.903, diff: 6.94399999999996
+        time: 530.603, lastTime: 502.847, diff: 27.755999999999972
+        time: 537.542, lastTime: 530.603, diff: 6.939000000000078
