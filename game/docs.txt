@@ -1,0 +1,73 @@
+player
+coins
+lava
+
+level completed when player collects all coins
+
+can jump andmchange direction midair
+
+consist of
+    static background
+        empty, solic, lava
+    moving elements overlaid on background
+        player, coins, certain pieces of lava
+
+technology
+    browser dom for the graphics
+    key events for user inptu
+
+representing level via string
+    . empty space
+    # walls
+    + lava
+    @ player's starting position
+    o coins
+    = horizontal hovering to and fro lava
+    | vertically moving to and fro lava
+    v dripping lava (moves down, than jumps back to starting position) (add aceleration?)
+
+Level class
+    constructor takes argument for the plan
+     and derives
+        height
+        width
+        startActors (include the moving objects)
+        rows (array of rows which are arrays of the characters)
+            -maps through the rows, returning the string for background elements such as (empy, wall and lava)
+            -if character represent moving objects, will create an object with vector and character and store in 
+            startActors
+
+State class
+    this.status (playing, lost, won)
+    this is a persistent data structure, updating the game creates a new state leaving the old one intact
+    State.start(level) to start
+
+Actors
+    actor objects represent the current position and state of a given moving element
+    ALL actor objects conform to the same interface
+    properties
+        pos - holds coords of the element's top-left corner
+        size - holds it size
+        type - identify it as a "player", "coin" or "lava"
+
+    method
+        update - used to compute their new state and position after a given time step (??or for the player actor user input?)
+
+    static method for actor class
+        .create(<coords>, <ch>) //the ch is indeed for the lavas only
+
+    Vec has a times method, which would be useful when we need to multiply a speed vector by a time interval to get 
+    the distance traveled during that time
+
+    the moving elements or actors get their own classes since their behaviors are very different
+
+random notes
+    coins are given a vertical wobble property, when created, the coins initial wobble is randomized so that coins in the 
+    game don't all uniformly wobble together.
+
+    Math.sin(which gives the y-coord of a point on a circle) can be utilised to give a more wavy wobble
+
+For this project, the encapsulation is minimized, as it does require extra effort, more code, concepts and interfaces.
+
+however we shall encapsulate the drawing subsystem
+    define a display objects, which displays a given level and state

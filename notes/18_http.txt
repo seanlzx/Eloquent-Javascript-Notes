@@ -1,0 +1,418 @@
+"Communication must be stateless in nature [...] such that each request from client to server must 
+contain all of the information necessary to understand the request, and cannot take advantage of any 
+stored context on the server."
+
+- Roy Fielding, Architectural Styles and the Design of Network-based Software Architectures
+
+The protocol
+    when you type and enter a URL
+        - the browser looks up the address of the server associated with the Domain Name
+        and tries to open a TCP connection with it on port 80(the default port for HTTP traffic)
+        
+        - if the server exists the the browser "request" something like this
+            GET /<insert resource> HTTP/1.1
+            Host: <insert domain name>
+            User-Agent: <your browser's name>
+
+        - the server may "responds" with something that looks like this
+            HTTP/1.1 200 OK
+            Content-Length: <content-length>
+            Content-Type: <content-type(e.g text/html)>
+            Last-Modified <insert datetime>
+
+            <!doctype html>
+            ...
+
+        explaining requests
+            request methods
+                -GET (get resources)
+                -POST (send information)
+                -DELETE (delete resources)
+                -PUT (to create or replace resources)
+
+            note: the server is not obligied to carry out every request it gets (you can't delete a random website for example)
+
+            the part after the method is the resource the request method applies to, it can simply be a file.
+            it can be anything that can be transferred as if it were a file
+
+            then the indication of the HTTP protocol version
+                many sites use HTTP version 2 as oopose to 1.1. 2 supports the same concepts but it more complicated 
+                so that it can be faster. Browsers will automatically switch to the appropriate protocol version
+                when talking to a given server
+
+        explaing responses
+            will start with the response followed by the three digit status code, then a human readeable string
+                HTTP/1.1 200 OK
+            
+            afterwards, may be followed by any number of headers, example
+                Content-Length: 65585                               size in bytes
+                Content-Type: text/html
+                Last-Modified: Thu, 04 Jan 2018 14:05:30 GMT
+
+            for most headers, the client and server are free to decide whether to include them in request or response
+            but a few are required such as
+                Host 
+                    which specifies hostname, should be included as a server may serve multiple hostnames on a 
+                    single ip address
+
+                both requests and responses may include blank line followed by a body which contains the data
+                being sent.
+                    GET and DELETE requests don't send along any data
+                    POST and PUT request do
+
+                    error responses require no body as while 
+                
+Browsers and HTTP
+    so when we enter a URL to a browser address bar, it will make a request
+    when the resulting HTML page references other files, such as images and JS files, those are also retrieved
+
+    a moderately complicated website can easily include anywhere from 10 to 200 resources.
+    To fetch those quickly, browsers will make several GET request simultaneously, rather than making a request and 
+    waiting for response before sending the next request
+
+    HTML may include Forms, which allow the user to fill out information to send to the server
+        when a button of type="submit" within the form tags is clicked, the content of the fields are
+        packed into an HTTP request and the browser navigates to the result of that request
+        
+        form method="GET"
+            form information added to the end of the "action" URL as a query string
+            the browser request may look as follows
+                GET /example/message.html?name=Jean&message=Yes%3F HTTP/1.1
+                // the "?" indicates the end of the "path part" of the URL and the start of the "query part"
+                // the query has name value pairs which are separated by "&"
+                // some characters in query string must be escaped
+                    // message is actually Yes?, we escaped ? with %3F
+                    // URL encoding escaped with a "%" followed by a two digiit hexadecimal number
+                    // JS provide encodeURIComponent() and decodeURIComponent() functions
+                        console.log(encodeURIComponent("Yes?"));
+                        // → Yes%3F
+                        console.log(decodeURIComponent("Yes%3F"));
+                        // → Yes?
+
+        form method="POST"  
+            with the POST method, the query string will be kept in the body of the request rather than the URL
+                POST /example/message.html HTTP/1.1
+                Content-length: 24
+                Content-type: application/x-www-form-urlencoded
+
+                name=Jean&message=Yes%3F
+
+        GET 
+            requests should be used to ask for information and no side effects
+        POST 
+            should be used for requests that change something on the server such as, creating a new account 
+            or posting a message
+
+        Client-side software such as browsers will often implicitly make GET request
+
+fetch
+    the interface that browsers JS use to make HTTP requests is called fetch. Since it's relatively new, it conveniently
+    uses promises (which is rare for browser interfaces)
+
+    calling fethc returns a promise that resolves to a "response" object holding information about the server's response
+    such as
+        .status
+        .headers.get(<insert header string>) // the header string is case-INsensitive
+
+    BYYYY DDDUHHHHHH WAAAYYY
+        even if the server responded with an error code, the promise returned by fetch may still resolve sucessfully.
+        It might also be "rejected" if there is a netwrok error or if the server can't be found.
+
+    the first arugument in a fetch() should be the URL to be requested. if the URL doesn't start with a protocol 
+    name(http:, etc) it is treated as relative.
+
+    when it starts with a "/", it replaces the current path(the current path being the part after the server name)
+    when it does not include "/" at the start, the current path is put infront of the relative URL
+
+    to get the actual content of the response you can use .text() however itself is a promise, as the response should
+    be as soon as the response header, the response.text() will be a promise, as it will take longer due to usually having
+    more content???
+
+    .json() returns the promise that resolves to a value as if parsing the body as JSON or rejects if it's not valid
+    JSON
+
+    be default fetch() uses the GET method to make a request and does not include a request body. you can add a second
+    argument. 
+        fetch("example/data.txt", {method: "DELETE"}).then(resp => {
+            console.log(resp.status);
+        // → 405
+        });
+
+    to add a request body, you can include body option. for example we have a "range" header which instructs
+    the server to return only part of a response
+        fetch("example/data.txt", {headers: {Range: "bytes=8-19"}})
+        .then(resp => resp.text())
+        .then(console.log);
+        // → the content
+    the browser will automatically add some request headers, such as "Host" and those needer for the server to figure out the
+    size of the body.
+
+HTTP sandboxing
+    making HTTP request in web page scripts raises concerns about security.
+    the person controlling the script might not have the same interests as the person whose computer it is running
+        e.g. if you were to go on mafia.org, you wouldn't want it to be able to make a request to ocbc.com using identifying
+        info from your browser to transfer money
+
+        browsers can protect us by disallowing scripts to make HTTP request to other domains
+
+        this can be annoying if you want your system to access several domains for legit reasons. Fortunately, servers
+        can include a header like this to explicitly indicate the browser is okay for the request to come from
+        another domain:
+            Access-Control-Allow-Origin: *
+
+Appreciating HTTP
+    When building a system that requires communication between a JS program running in the browser (client-side) and a 
+    program on a server (server-side), there are several ways to model this communication
+        1. Remote procedure calls
+            - a common model of such communications
+            - communication follows the patterns of normal function calls, except that the function is actually running on
+            another machine
+            - to call it, make a request to the server including the function's name and arguments
+            - think of of HTTP as a vehicle for communication, you will likely write an abstraction layer that hides it 
+            entirely
+        
+        2. another approach is to build your communication around the concept of resources and HTTP methods
+            - e.g. instead of a remote procedure called "addUser"
+                use a PUT request to /users/larry
+                instead of encoding that user's properties in function arguments
+                define (or use an existing format) a JSON document format, that represents a user
+                the body of the PUT request will be the above document format
+                to fetch such a resource, you can use GET to request the resource's URL (e.g. /users/larry)
+
+                this second approach makes it easier to use some of the features that HTTP provides such as
+                    - support for caching resources(keep a copy on the client for fast access)
+                    
+                the the well designed concepts used in HTTP, can provide a helpful set of principles to design your 
+                server interface around
+
+Security and HTTPS
+    data travelling over the internet tends to follow a long, dangeroud road. hopping through coffee shops, various companies,
+    countries, etc. At any point along its route it may be inspected or even Modified
+
+    it is important to keep the data...
+        - secret, such as passwords
+        - unmodified, such as a bank account number you transfer money to
+
+    plain HTTP is not enough
+
+    the secure HTTP protocol (URLs starting with https://)
+        - wraps HTTP traffic in a way that makes it harder to read and tamper with
+        - before exchanging data, the client verifies the server's identity by asking to prove a cryptographic certificate
+            note: the cryptographic certificate would be issued by a certificate authority the browser recognizes
+        - next, all data going over the connectino is encrypted in a way that should prevent eavesdropping and tampering
+
+    thus HTTPS should
+        - prevent other people from impersonating the website you are trying to talk to
+        - other people from snooping on your communications
+    it's not perfect but much better than plain HTTP
+
+Form fields
+    Forms were originally desgined for the pre-JS web, to allow sites to send user 
+    filled information in an HTTP request. This design assumes that interaction 
+    with a server always happenens by navigating to a new page
+
+    Though their elements are part of the DOM, form field elements support a number of porperties 
+    and events that are not present on other element. making it possible to...
+        - inspect and control input fields
+        - add new functionality to Forms
+        - use forms and fileds as building blocks in a JS application
+
+    <input> tags attributes:
+        text
+        password
+        checkbox
+        radio
+        file
+
+    <textarea> tag
+
+    <select> and <option> tags
+
+    form fields do not need to be in a <form> tag.
+    the fields however cannot be submitted.
+    rather you would interact with this form fields with JS
+
+Form fields unlikes most HTML elements, 
+    are capable of being keyboard focued. When the form element is active. Keyboard events would
+    target the element
+
+    JS can control focus with .focus and .blur methods
+
+    document.activeElement corresponds to the currently focused element
+
+    note: 
+        html also has the autofocus attributes
+        users can also move focus with the tab key
+            by giving elements a "tabindex" attribute, you can change the order the user moves through elements
+            any element, even those that are not normally focusable can be given a tabindex to be focusable
+            a tabindex of -1 will make the element skept with tabbing
+
+Disabled Fields
+    disable attribute
+        <button disabled>I'm out</button>
+
+    It may be a good ideas to use JS to temporary disable buttons that carryout actions that
+    take a while or lag. This is to prevent users from accidentally trigerring an action 
+    multiple times.
+
+The form as a whole
+    so when a field is in a form, you can access it via the DOM through <formElement>.elements collection
+
+    form fields have a "name" attribute which identifies it when the form is submitted, it can also be used
+    as a property name
+    
+    form elements can be accessed via number (like an array) and name (like a map)
+        <formElement>.elements[1]
+        <formElement>.elements.<element name>
+
+    you can also access the parent form via
+        <formElement>.form == <parentForm>
+
+    event.preventDefault() can be used preventing form from reloading or submitting data
+        Intercepting the submission of forms with JS has various uses
+            - can use JS code to verify the submitted values (though just 
+            like validation with HTML, user can modify client-side JS)
+            - or we can disable the regular way of submission, and handle it
+            our own way, like using fetch to process the data without reloading the page!!!!!!!!!
+            (or we could just have a formless inputs)
+
+sidetrack, a way to deal have multiple elements with same ID but different parent div in the same page
+    <div id="parent1">
+        <p id="paragraph1">1st paragraph</p>
+    </div>
+
+    <div id="parent2">
+        <p id="paragraph1">2nd paragraph</p>
+    </div>
+
+    <script>
+        changeColor("#parent1 #paragraph1", "red"); 
+        changeColor("#parent2 #paragraph1", "blue"); 
+        function changeColor(selector, color){
+            document.querySelector(selector).style.backgroundColor = color;
+        }
+    </script>
+
+Text Fields
+    fields such as 
+        <textarea>
+        <input type="text">
+        <input type="password">
+    share a common interface. Their DOM elements have a value property, which can be read and changed
+
+    <field>.selectionStart and <field>.selectionEnd holds the start and end index of highlighted text 
+    in a field. If no text is selected then they both have the same value of the position of the cursor.
+    Woah so just like value, this properties can be written to
+
+    the "change" event does not fire everytime something is typed, rather it fires when content is changed 
+    AND the field loses focus. 
+    for responding to changes immediately, use the "input" event (not to be mistaken for the tag)
+
+
+<select>
+    the <option> tags under a <select> parent can be accessed via the DOM
+        <select>.options
+
+File Fields
+    WOOOOAHHH
+
+    so file fields ofc can be used to upload files via forms
+    
+    BBBUUUUUT
+
+    in modern browsers, they can also be used in a hackyy sought of way to read and process
+    users files with JS 
+
+    so the <input type="file"> field also support the multiple attribute
+    <input type="file" multiple> therefore the DOM object for the files is an array like object
+        <input of type file element>.files
+        the files object has propoerties such as
+            .name
+            .size
+            .type
+
+    it does not however have a property that contains the content
+
+    getting content is more involved, as it involves reading a file from disk that can take
+    time
+        <input type="file">
+        <script>
+            let input = document.querySelector("input[type='file']")
+        
+            input.addEventListener("change", event => {
+                // create a FileReader object
+                let reader = new FileReader()
+                
+                // just to demonstrate the existence but lacking of binding of the .result property
+                console.log(reader.result)
+                // => null
+
+                // create an event listener to listen for load event
+                reader.addEventListener("load", event => {
+                    console.log(reader.result)
+                    // => content of file
+                })
+            
+                // readAsText method will trigger the load event above
+                reader.readAsText(input.files[0])
+            })
+        </script>
+
+
+
+        // the below demonstrates the "error" event
+        function readFileText(file) {
+            return new Promise((resolve, reject) => {
+                let reader = new FileReader();
+                reader.addEventListener(
+                "load", () => resolve(reader.result));
+                reader.addEventListener(
+                "error", () => reject(reader.error));
+                reader.readAsText(file);
+            });
+            }
+
+Storing data client-side (mini applications)
+    simple HTML with a bit of JS make for great "mini applications"
+
+    to save data...
+        you could set up a server, connect it to the internet, and have your application 
+        store something there...
+
+        or, you could just keep the data in the browser, the "localStorage" object can used
+        to store data in a way that survive page reloads.
+            localStorage.setItem(<nameString>, <valueString>)
+            console.log(localeStorage.getItem(<nameString>))
+            localeStorage.removeItem(<nameString>)
+
+        values in localStorage can be overwritten or removed with "removeItem" or when the user
+        clears local data
+
+        sites get different storage compartments. Thus they should only be able to modify their
+        own localStorage
+
+
+        Browsers do limit the data a site can store in localStorage
+
+    there is also "sessionStorage" which is similar to localStorage but is forgotten at the
+    end of each session, for most browsers, means when the browser is closed
+
+extras
+    Object.assign(<target object>, <source object>)
+        copies all the properties and their values from source object to target object
+
+you can make a HTTP request as such
+    fetch(<relative link>).then(response => response.text()).then(text => {
+        console.log(text)}
+    })
+
+Content negotiations
+    "accept" request header tells the server what type of document the client will get
+        Many servers ignore this header, but when a server has various ways to encode
+        a resource, it can look at this header to send the client's preference.
+
+        example: https://eloquentjavascript.net/author is configured to respond with either:
+            - plaintext (text/plain)
+            - HTML (text/html)
+            - JSON (application/json)
+            indentified by media types, stated in brackets above

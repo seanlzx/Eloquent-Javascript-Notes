@@ -1,0 +1,62 @@
+https://www.youtube.com/watch?v=dIu_C5Akino
+    JS doesn't require you to install anything
+
+    the engine takes the code and executes it
+
+    JS have numerous engines
+        V8 - chrome
+        spidermonkey - firefox
+        chakra - edge
+        nitro - safari
+
+    ECMA script is the standard for executing JS
+
+    measuring how well engines adhere to ECMAscript?
+        test 262 by tc39
+
+    the environment (the browser) (runtime?)
+        the engine 
+
+    in theory we should be able to take the engine and put it out the browser (node.js)
+        node.js utilises V8 for serverside shit
+
+    JS is actually mostly compiled (it depends on the engine)
+        the engine could inteprete or compile it
+        JIT, just in time compilation
+
+https://www.youtube.com/watch?v=8aGhZQkoFbQ&t=1s
+
+    so we got the heap
+        memory allocation
+    stack
+        WebAPIs
+          DOM
+          ajax
+          setTimeout  
+
+    JS is single threaded, single call stack, one thing at a time
+
+    personal note: so the call stack to oversimplify it, is basically pushing pieces of code do be run and popping
+    it off when you're done
+
+    so when a non sync action that takes a while is running, and for example you press a button to perform an
+    action, the action will be "queued"? and delayed. once the non sync actions run than your queue button action
+    can continue. Users will have a tendency to spam the button which will lead to some funny shit
+    https://youtu.be/8aGhZQkoFbQ?t=570
+
+    conccurrency and the event loop
+        "one thing at a time, except not really."
+
+        the runtime consist of the heap and the stack, and can only do one thing at a time
+        however, the browser also gives us other things
+            WebAPIs
+                threads, that you can't like access, but can make calls too
+                includes sutff like set timeout
+                webAPIs dont live in the V8 engine source, it's like extra stuff
+    
+            refer to this animation
+                https://youtu.be/8aGhZQkoFbQ?t=775
+
+            note stuff in the callback queue still have to wait for the stack to be emptied to run, 
+            so running setTimeout does not gurantee it's callback function running exactly after the time
+            stated in the second parameter

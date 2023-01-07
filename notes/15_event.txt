@@ -1,0 +1,373 @@
+Detecting key presses
+    Some primitive machines and interfaces recognize keypresses by reading the CURRENT state of all keys.
+        - to react to this keypress, you have to constantly read all the keys to ensure you detect them before
+        they're released.
+        - this makes it dangerous to perform other time-intensive computations since you might miss a keypress
+
+    a better system...
+        - have piece of hardware of operating system to record the keypress into a queue.
+        - a program can prediocally check the queue for new events
+        - this system is known as 'polling', and the program will have to remember to look 
+            up the queue, and frequently enough so it won't feel unresponsive
+        - most programmers prefer to avoid 'polling'
+
+    an even better system...
+        - a better mechanism if for the system is for the system to notify the code when an event occurs
+        - we can register functions as even't listeners for specific events
+            <p>Click this document to activate the handler.</p>
+            <script>
+            // the 'window' binding refers to a built-in object from the browser. 
+            // it represents the browser window containing the document
+            // addEventListener, when the event in the 1st parameter is called, run the function in the 2nd parameter
+            // addEventListner(<event>,<event handler function>)
+            window.addEventListener("click", () => {
+                console.log("You knocked?");
+            });
+            </script>
+
+Events and Dom Nodes
+    <button>Click me</button>
+    <script>
+        let button = document.querySelector("button");
+        button.addEventListener("click", () => {
+            console.log("Button clicked.");
+        });
+    </script>
+
+    can also attach event directly to nodes as such
+        <p on<insert event>="function()"></p>
+        e.g
+            <p onclick="function()"></p>
+        however this way only allows one onclick attribute, addEventListener allows for multiple
+        handlers
+
+    there is also a removeEventListener, the arguments should be the exact same as the addEventListener
+    sidenote: since you removeEventListener must have the exact same value as addEventListener, anonymous functions prob not a good idea for this scenario
+        <button>single press</button>
+        <script>
+            let button = document.querySelector("button");
+            function once() {
+                console.log("Lift OFF!!!");
+                button.removeEventListener("click", once);
+            }
+            button.addEventListener("click", once);
+        </script>
+
+Event objects   
+    event handler functions are passed an argument, the event object.
+        // event.button, contains the mouse button pressed
+        // event.type, well... gives the type
+
+        <button>touch me anyway you want</button>
+        <script>
+            let button = document.querySelector("button");
+            button.addEventListener("mousedown", event => {
+                switch (event.button) {
+                    case 0:
+                        console.log(0)
+                        break;
+                    case 1:
+                        console.log(1)
+                        break;
+                    case 2:
+                        console.log(2)
+                        break;
+                    case 3:
+                        console.log(3)
+                        break;
+                    case 4:
+                        console.log(4)
+                        break;
+                } 
+            })
+        </script>
+
+    // depending on the event the properties and information may differ
+
+Propogation
+    For most event types, handlers registered on nodes will also recieve events that happen
+    to the children.
+
+    example if a button within a paragraph is clicked, event handlers on the paragraph will also the 
+    see the click event
+
+    if both the button and the paragraph have a handler, the more specific handler (the button) goes 
+    first
+        the event is said to propagate from the child to the parent, to the parent's parent and so forth 
+        to the root of the document.
+
+    an event handler can call the 'stopPropagation()' method to prevent handlers further up from receving the 
+    event
+        <p><b>bold</b> and <i>brash</i></p>
+
+        <script>
+        let b = document.querySelector('b');
+        let p = document.querySelector('p');
+        
+        p.addEventListener("mousedown", event => {
+            console.log('paragraph clicked');	
+        })
+        
+        b.addEventListener("mousedown", event => {
+            console.log('bold clicked');
+            if (event.button == 2) event.stopPropagation();
+        })
+        </script>
+
+        most event objects have a .target property referring to the origin node
+            helps ensure you don't handle propagated nodes
+
+            also a way to have a single event listener handle multiple nodes
+            <div id="buttonDiv">
+                <button>A</button>
+                <button>B</button>
+                <button>C</button>
+            </div>
+            <script>
+                let buttonDiv = document.getElementById("buttonDiv")
+                
+                buttonDiv.addEventListener("click", event => {
+                    console.log(event.target.innerHTML)
+                })
+            </script>
+
+Default actions
+    certain events have default actions
+        clicking a link, will take you to the link's target
+        pressing the arrow will scroll the down
+        right-clicking will get you the context menu
+
+    mostly, the JS event handlers will be called before the default behavior, we can
+    use the .preventDefault() method
+
+    use .preventDefault() consciously, it can be unpleasant for users to deal with unexpected behaviors
+
+    depending on the browsers, certain events can't be intercepted at all
+        e.g. chrome
+            ctrl-w shortcut (close tab) can't be handled by JS
+
+key Events
+    when you press a key on the keyboard, your browser fires a "keydown" event
+    when released, the broswer fires a "keyup" event
+    note: the keydown event fires contantly while the key is down
+    
+    the .key property holds a string that would correspond to what would be typed
+        -when you press shift + k or shift + 1 the string woudl be "K" and "!" respectively
+        -for special keys like enter and shift, "Enter" and "Shift" respectively
+        -the special keys also produce events.key but they also have their own 
+        corresponding boolean property
+
+    origin 
+        -the dom node origin for a key event depends on the element that has focus, when the
+        -key is pressed. 
+        -Most nodes cannot have focus unless given a tabindex attribute
+        -links, buttons, and form fields can have focus'
+        -when nothing has focus, document.body acts as the target node 
+
+    using key events to figure out what the user is typing can be problematic
+        -virtual keyboards such as those on phones, don't fire key events
+        - input method editor won't recognize the character
+        - so to get what was typed, just stick to <input> and <textarea>
+
+Pointer events
+    currently to widely used ways to point at things on a screen
+        -mice (including: touchpads and trackballs)
+        -touch screens
+
+    mouseclicks
+        similar to keydown and keyup
+            'mousedown' (when mouse HELD down, does not constantly fire event unlike keydown)
+            'mouseup'
+
+        also have
+            'click'
+        the events fire on the DOM nodes that are immediately below the mouse pointer
+        
+        also have
+            'dblclick'
+
+        note:
+            the difference between click and mousedown
+                when you click on element x and shift the mouse to element y and release,
+                the mouseup event only happens to element y
+
+                for the click event to occur on an element. the element must have both mousedown and 
+                mouseup
+
+        mouse events have 
+            properties relative to the top-left of the window 
+                clientX
+                clientY
+            properties relative to the top-left of the document accounting for scroll
+                pageX
+                pageY
+
+Mouse motion
+    everytime the mouse pointer moves, a "mousemove"  event is fired to track the position
+    of the mouse.
+
+the mouse also has a 'buttons' property, when 0, no buttons are down,
+    left button has code 1
+    right button has code 2
+    middle button has code 4
+    when multiple buttons are held at a time, the sum of their codes is the result
+    note: the 'buttons' codes do not correspond to the 'button' codes
+
+touch events
+    during the early days, browser on touchscreen would imagine touch events as mouse events
+    however there are a few key differences:
+        - a finger doesn't have multiple buttons
+        - you can't track the finger on the screen like "mousemove"
+        - there can be multiple fingers on the screen
+
+    events fired from touch interaction
+        - touchstart
+        - touchmove
+        - touchend
+    because the touchscreen can detect multiple fingers, the above events have a touches property,
+    which holds an array of points, each has its own clientX, clientY, pageX, pageY
+
+    can readup on it on phone to get a better idea
+
+    you'll often make use of preventDefault for touch events
+
+Scroll Events
+    "scroll" event can be used for
+        - disable off-screen animations
+        - send spy reports to your evil headquarters
+        - showing page progress (e.g. page bars)
+
+    note:
+        preventDefault does not prevent the "scroll" event from scrolling, at the event only occurs after the scrolling
+
+note: 
+    aside from scrollHeight, all the below are global attributes, (PISS NOTES:makes sense, they belong to the window)
+    innerHeight, innerWidth is a global attribute for the height and width of the window
+    document.body.scrollHeight for total document height
+    pageYOffset for current scroll position
+    % as a unit for lengths in styling relative to page length 
+Focus Events
+    when an element gains focus it fires a "focus" event, when it loses focus, it fires a "blur" event
+    unlike other events the above do not propagate
+
+    in this example below, a help paragraph, displays help for focused elements, and clears the paragraph when 
+    elements fire blur; 
+    personal obeservation: each element field has a blur that clears the paragraph, it seems the field blur 
+    event is ran before the other fields focus event is run, which is a good thing and prevent a newly 
+    update help from being cleared
+
+        <input type="text" placeholder="name" data-help="How may I address you?">
+        <input type="text" placeholder="company" data-help="From which company you hail from?">
+        <p id="help"></p>
+        <script>
+        let help = document.querySelector("#help");
+        let fields = document.querySelectorAll("input");
+        
+        for (let field of fields) {
+            field.addEventListener("focus", event => {
+            help.innerHTML = event.target.getAttribute("data-help");
+            })
+            field.addEventListener("blur", event => {
+            help.innerHTML = ""
+            })
+        }
+        </script>
+
+    the window object also have focus and blur events when the user moves between tabs or windows
+
+Load event
+    the "load" event fires on the window and document.body object when a page finishes loading.
+    because the script tag, runs when the tag is encountered in the HTML Document.
+    the "load" event can be used to ensure that JS actions that affects parts of the document after 
+    the script tag, is loaded before the code runs. 
+
+    elements such as images and script tags also have load events, since the may loaded stuff form an 
+    external source. like focus related events, loading events do not propagate.
+
+    beforeunload event
+        when a page is closed or navigated away from(e.g. click a link), a "beforeunload" event fires.
+        it can be used to prevent users form losing work.
+        by preventing the default behavior and setting the returnValue property to string. the browser
+        will show a dialog asking if they really want to leave the page. However due to dodgy ass sights
+        displaying ("don't go, single milfs in your neighborhood miss you", etc), most browsers no longer
+        display them.
+
+Events and the Event loop
+    Browser event handlers are scheduled when the event ocurs but must wait for other scripts that are running
+    to finish before they can run
+
+    in the case where your event really can't wait, you can use web workers (a different thread?)
+    web borkers run on a background thread
+
+    MDN docs
+        Can almost run and standard JS code in a worker thread except
+            - can't run DOM manipulation
+            - cant use some default methods and propertiers of the window object
+
+        data is sent between workers and the main thead via a system of messages, both sides
+        send via postMessage() method, and respond to messages via onmessage event handler contained
+        within the "message" event  "data" property. Only values that can represented as JSON can be
+        sent as messages the data is copied rather than shared
+
+        workers can also
+            - spawn new workers, as long as those new workers are hosted within the same origin as
+            the parent page
+            - make use XMLHttpRequest for network I/O 
+                EXCEPT "responseXML" and "channel" will always return null
+
+    just read the chapter
+    https://eloquentjavascript.net/15_event.html#h_nX2hsbjECC
+
+
+Timers
+    when you have a set timeOut function, you can disable it with clearTimeout()
+        <button>
+        pressMeBeforeIt'sTooLate
+        </button>
+        <script>
+        let button = document.querySelector("button")
+        
+        let boom = setTimeout(() => {
+            console.log("boom")
+        }, 2000)
+        
+        button.addEventListener("click", () => {
+            clearTimeout(boom)	
+        })
+        </script>
+
+    the "cancelAnimationFrame()" functions works in a similar way as clearTimout
+
+    we also have setInterval and clearInterval
+
+Debouncing
+    some events may potentianally fire rapdidly ("mousemove", "scroll"), take caution not
+    to do anything too time-consuming or your handler will take up so much time that interaction
+    with the document starts to feel slow
+
+    you can use setTimeout to ensure your don't fire this events too often. This is refered to as
+    "debouncing" an event.
+
+    e.g.
+    <button>
+        <textarea></textarea>
+        <input></input>
+    </button>
+    <script>
+        // for textarea, it will log the console immediately
+        let textarea = document.querySelector("textarea")
+        
+        textarea.addEventListener("input", () => {
+            console.log(textarea.value)
+        })
+        
+        // for input, it will log the console only after the user stops typing for 500ms
+        let input = document.querySelector("input")
+        
+        // initially declare the variable so you can initially clearTimout it in the event handler below
+        let print;
+        input.addEventListener("input", () => {
+            clearTimeout(print)
+            print = setTimeout(()=>console.log(input.value), 500);
+        })
+    </script>

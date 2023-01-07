@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    <script>
+        let squareWorker = new Worker(URL.createObjectURL(new Blob(["("+worker_function.toString()+")()"], {type: 'text/javascript'})));;
+        squareWorker.addEventListener("message", event => {
+            console.log("Worker responds: ", event.data);
+        });
+        squareWorker.postMessage(5);
+
+        function worker_function() {
+            // all code here
+            addEventListener("message", event => {
+                postMessage(event.data * event.data);
+            })
+        }
+        // This is in case of normal worker start
+        // "window" is not defined in web worker
+        // so if you load this file directly using `new Worker`
+        // the worker code will still execute properly
+        if(window!=self)
+          worker_function();
+
+        
+    </script>
+</body>
+</html>

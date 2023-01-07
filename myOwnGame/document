@@ -1,0 +1,18 @@
+reading chapter 16 is a real bitch, try figure it out on your own first
+
+for the graphics module, 
+    create a utility function to create elements, attributes(let the argument be an object) and children
+        note just like b4 examples, the elt function does not append to the dom for you still have to "document.appendChild(elt("p", ...))" or whatever
+
+    so the background should only be drawn once, actors are the only things that should change
+
+    have a constant for scaling the entire display of the game, this JS const can change the style tag at the top of the 
+    document
+
+    https://stackoverflow.com/questions/524696/how-to-create-a-style-tag-with-javascript
+
+    can draw the background as a table??
+
+    so for each new state, remove the old actors and add actors for curretn state.
+
+    the game has a scrolling background
